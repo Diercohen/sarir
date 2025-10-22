@@ -1,7 +1,7 @@
 import type { Dispatch, ReactNode, SetStateAction } from "react";
 
 import React, { createContext, useContext, useMemo, useState } from "react";
-import type { Language } from "./App.const";
+import { Language } from "./App.const";
 
 interface AppContextProps {
   language: Language;
