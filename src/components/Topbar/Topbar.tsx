@@ -11,7 +11,7 @@ import type { FC } from "react";
 
 const Topbar: FC = () => {
   return (
-    <Menubar>
+    <Menubar className="fixed top-0 left-0 right-0 z-50">
       <MenubarMenu>
         <MenubarTrigger>File</MenubarTrigger>
         <MenubarContent>
