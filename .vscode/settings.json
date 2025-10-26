@@ -1,0 +1,27 @@
+{
+  "workbench.colorTheme": "Solarized Dark",
+  "editor.accessibilitySupport": "off",
+  "editor.fontSize": 16,
+  "scss.lint.unknownAtRules": "ignore",
+  "editor.tabSize": 2,
+  "diffEditor.ignoreTrimWhitespace": false,
+  "editor.unicodeHighlight.ambiguousCharacters": false,
+  "javascript.format.semicolons": "remove",
+  "html.completion.attributeDefaultValue": "singlequotes",
+  "typescript.preferences.quoteStyle": "single",
+  "javascript.preferences.quoteStyle": "single",
+  "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit"
+  },
+  "explorer.compactFolders": false,
+  "git.autofetch": true,
+  "git.confirmSync": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "typescript.format.insertSpaceAfterOpeningAndBeforeClosingNonemptyBraces": false,
+  "javascript.format.insertSpaceAfterOpeningAndBeforeClosingNonemptyBraces": false,
+  "[typescriptreact]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "files.autoSave": "onFocusChange"
+}
