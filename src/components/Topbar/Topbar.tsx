@@ -13,7 +13,7 @@ import { Button } from "../ui/button";
 
 const Topbar: FC = () => {
   return (
-    <Menubar className="border-0 shadow-none mx-2 fixed top-0 left-0 right-0 z-50">
+    <Menubar className="border-0 shadow-none px-2 fixed top-0 left-0 right-0 z-50 bg-neutral-700 rounded-none">
       <div className=" w-full flex justify-between items-center">
         <div>
           <MenubarMenu>
