@@ -337,7 +337,7 @@ const CanvasBoard: FC = () => {
           </div>
           {/* Grid pattern overlay (optional) */}
           <Grid
-            zoomVisibilityThreshold={0.6}
+            zoomVisibilityThreshold={0.75}
             zoom={zoom}
             gridSize={20}
             canvasWidth={canvasWidth}
