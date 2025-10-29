@@ -1,3 +1,4 @@
+import clsx from "clsx";
 import { useEffect, useRef, useState, type FC } from "react";
 
 const RULER_SIZE = 24; // Size of ruler in pixels
@@ -116,7 +117,7 @@ const Grid: FC<GridProps> = ({
   canvasWidth,
   canvasHeight,
   gridSize,
-  color = "rgba(0,0,0,0.15)",
+  color = "rgba(0,0,0,0.10)",
 }) => {
   return (
     <div
@@ -319,21 +320,20 @@ const CanvasBoard: FC = () => {
             canvasWidth={canvasWidth}
             canvasHeight={canvasHeight}
           />
-          <Grid
-            zoom={zoom}
-            gridSize={20}
-            canvasWidth={canvasWidth}
-            canvasHeight={canvasHeight}
-          />
-          {zoom > 3 && (
+          <div
+            className={clsx(
+              "absolute top-0 left-0 transition-opacity duration-1000",
+              zoom > 2 ? "opacity-100" : "opacity-0"
+            )}
+          >
             <Grid
               zoom={zoom}
-              gridSize={2}
+              gridSize={2.5}
               canvasWidth={canvasWidth}
               canvasHeight={canvasHeight}
-              color="rgba(0,0,0,0.1)"
+              color="rgba(0,0,0,0.05)"
             />
-          )}
+          </div>
         </div>
       </div>
 
