@@ -45,14 +45,20 @@ const Ruler: FC<RulerProps> = ({ direction, zoom, scroll, length }) => {
 
   return (
     <div
-      className="absolute dark:bg-neutral-900 bg-neutral-200 text-neutral-900 dark:text-neutral-400 text-[11px] select-none"
+      className={clsx(
+        "absolute dark:bg-neutral-900 bg-neutral-200 text-neutral-900 dark:text-neutral-400 text-[11px] select-none",
+        {
+          "border-b border-b-neutral-400/50 dark:border-b-neutral-500":
+            isHorizontal,
+          "border-r border-r-neutral-400/50 dark:border-r-neutral-500":
+            !isHorizontal,
+        }
+      )}
       style={{
         width: isHorizontal ? `${length}px` : `${RULER_SIZE}px`,
         height: isHorizontal ? `${RULER_SIZE}px` : `${length}px`,
         top: isHorizontal ? 0 : RULER_SIZE,
         left: isHorizontal ? RULER_SIZE : 0,
-        borderBottom: isHorizontal ? "1px solid currentColor" : "none",
-        borderRight: !isHorizontal ? "1px solid currentColor" : "none",
       }}
     >
       {/* 0 mark at origin */}
@@ -255,7 +261,7 @@ const CanvasBoard: FC = () => {
     >
       {/* Origin corner */}
       <div
-        className="absolute dark:bg-neutral-800 bg-neutral-300 border-b border-r border-neutral-800 dark:border-neutral-400 z-10"
+        className="absolute dark:bg-neutral-800 bg-neutral-300 border-b border-r border-neutral-400/50 z-10"
         style={{
           width: `${RULER_SIZE}px`,
           height: `${RULER_SIZE}px`,
