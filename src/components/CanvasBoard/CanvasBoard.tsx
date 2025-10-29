@@ -256,6 +256,14 @@ const CanvasBoard: FC = () => {
     }
   };
 
+  const resetZoom = () => {
+    setZoom(1);
+    setPanX(0);
+    setPanY(0);
+    setIsDragging(false);
+    setDragStart({ x: 0, y: 0 });
+  };
+
   return (
     <div
       ref={containerRef}
@@ -357,9 +365,7 @@ const CanvasBoard: FC = () => {
 
       {/* Zoom info (optional) */}
       <div
-        onClick={() => {
-          setZoom(1);
-        }}
+        onClick={resetZoom}
         className="cursor-pointer absolute bottom-4 right-4  dark:bg-neutral-900 bg-neutral-200 text-black dark:text-white px-3 py-2 rounded text-sm"
         style={{ zIndex: 20 }}
       >
