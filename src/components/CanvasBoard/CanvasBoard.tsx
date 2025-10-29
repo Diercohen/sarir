@@ -1,3 +1,4 @@
+import ReactIcon from "@/assets/react.svg?react";
 import clsx from "clsx";
 import { useEffect, useRef, useState, type FC } from "react";
 
@@ -323,6 +324,16 @@ const CanvasBoard: FC = () => {
             }}
           >
             {/* Canvas content goes here */}
+            {/* Example: Inline SVG usage */}
+            <div className="absolute z-10 top-[50px] left-[50px] w-[100px] h-[100px]">
+              <ReactIcon
+                style={{
+                  width: "100%",
+                  height: "100%",
+                  filter: "drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1))",
+                }}
+              />
+            </div>
           </div>
           {/* Grid pattern overlay (optional) */}
           <Grid
