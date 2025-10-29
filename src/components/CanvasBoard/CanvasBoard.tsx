@@ -15,8 +15,8 @@ const Ruler: FC<RulerProps> = ({ direction, zoom, scroll, length }) => {
   const pixelsPerUnit = zoom;
 
   // Calculate visible range based on zoom and scroll
-  const startUnit = -scroll / pixelsPerUnit;
-  const endUnit = (length - scroll) / pixelsPerUnit;
+  const startUnit = scroll / pixelsPerUnit;
+  const endUnit = (length + scroll) / pixelsPerUnit;
 
   // Generate marks based on zoom level
   const getStep = () => {
@@ -34,7 +34,7 @@ const Ruler: FC<RulerProps> = ({ direction, zoom, scroll, length }) => {
   const endMark = Math.ceil(endUnit / step) * step;
 
   for (let i = startMark; i <= endMark; i += step) {
-    if (i === 0) continue; // Skip 0, it's at the origin
+    // if (i === 0) continue; // Skip 0, it's at the origin
     const isLongMark = i % (step * 5) === 0;
     marks.push({
       position: i,
