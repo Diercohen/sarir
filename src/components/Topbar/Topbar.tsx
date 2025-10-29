@@ -7,9 +7,8 @@ import {
   MenubarShortcut,
   MenubarTrigger,
 } from "@/components/ui/menubar";
-import { SettingsIcon } from "lucide-react";
 import type { FC } from "react";
-import { Button } from "../ui/button";
+import GeneralSettings from "./GeneralSettings";
 
 const Topbar: FC = () => {
   return (
@@ -30,10 +29,7 @@ const Topbar: FC = () => {
             </MenubarContent>
           </MenubarMenu>
         </div>
-        <Button variant="ghost" size="sm" aria-label="Submit">
-          <SettingsIcon className="size-4" />
-          <span className="text-sm">Settings</span>
-        </Button>
+        <GeneralSettings />
       </div>
     </Menubar>
   );
