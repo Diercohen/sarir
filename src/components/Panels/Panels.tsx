@@ -9,7 +9,7 @@ const Panels: FC = () => {
         <div className="h-full w-full ">
           <div className="grid grid-cols-1 gap-4">
             <Button
-              variant="default"
+              variant="outline"
               size="lg"
               className="w-full flex items-center gap-2 justify-start border-y rounded-none dark:border-neutral-500 border-neutral-200"
             >
