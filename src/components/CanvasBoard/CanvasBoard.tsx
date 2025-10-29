@@ -281,8 +281,12 @@ const CanvasBoard: FC = () => {
               marginLeft: `${RULER_ORIGIN_OFFSET}px`,
               // marginTop: `${RULER_ORIGIN_OFFSET}px`,
               backgroundImage: `
-              linear-gradient(rgba(0,0,0,0.05) 1px, transparent 1px),
-              linear-gradient(90deg, rgba(0,0,0,0.05) 1px, transparent 1px)
+              linear-gradient(rgba(0,0,0,0.05) ${1 / zoom}px, transparent ${
+                1 / zoom
+              }px),
+              linear-gradient(90deg, rgba(0,0,0,0.05) ${
+                1 / zoom
+              }px, transparent ${1 / zoom}px)
             `,
               // backgroundSize: `${20 * zoom}px ${20 * zoom}px`,
               backgroundSize: `${20 / zoom}px ${20 / zoom}px`,
