@@ -297,10 +297,8 @@ const CanvasBoard: FC = () => {
 
       {/* Zoom info (optional) */}
       <div
-        className="absolute bottom-4 right-4 bg-[#2b2b2b] text-white px-3 py-2 rounded text-sm"
-        style={{
-          zIndex: 20,
-        }}
+        className="absolute bottom-4 right-4  dark:bg-neutral-900 bg-neutral-100 text-black dark:text-white px-3 py-2 rounded text-sm"
+        style={{ zIndex: 20 }}
       >
         {Math.round(zoom * 100)}%
       </div>
