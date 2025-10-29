@@ -44,14 +44,14 @@ const Ruler: FC<RulerProps> = ({ direction, zoom, scroll, length }) => {
 
   return (
     <div
-      className="absolute bg-[#2b2b2b] text-[#888] text-[11px] select-none"
+      className="absolute dark:bg-neutral-900 bg-neutral-200 text-neutral-900 dark:text-neutral-400 text-[11px] select-none"
       style={{
         width: isHorizontal ? `${length}px` : `${RULER_SIZE}px`,
         height: isHorizontal ? `${RULER_SIZE}px` : `${length}px`,
         top: isHorizontal ? 0 : RULER_SIZE,
         left: isHorizontal ? RULER_SIZE : 0,
-        borderBottom: isHorizontal ? "1px solid #1a1a1a" : "none",
-        borderRight: !isHorizontal ? "1px solid #1a1a1a" : "none",
+        borderBottom: isHorizontal ? "1px solid currentColor" : "none",
+        borderRight: !isHorizontal ? "1px solid currentColor" : "none",
       }}
     >
       {/* 0 mark at origin */}
@@ -62,7 +62,7 @@ const Ruler: FC<RulerProps> = ({ direction, zoom, scroll, length }) => {
           [isHorizontal ? "top" : "left"]: 0,
           width: isHorizontal ? "1px" : "6px",
           height: isHorizontal ? "6px" : "1px",
-          backgroundColor: "#555",
+          backgroundColor: "currentColor",
         }}
       />
 
@@ -79,7 +79,7 @@ const Ruler: FC<RulerProps> = ({ direction, zoom, scroll, length }) => {
               [isHorizontal ? "top" : "left"]: 0,
               width: isHorizontal ? "1px" : `${mark.isLong ? 10 : 5}px`,
               height: isHorizontal ? `${mark.isLong ? 10 : 5}px` : "1px",
-              backgroundColor: "#555",
+              backgroundColor: "currentColor",
             }}
           >
             {mark.isLong && (
@@ -89,7 +89,7 @@ const Ruler: FC<RulerProps> = ({ direction, zoom, scroll, length }) => {
                   [isHorizontal ? "left" : "top"]: 3,
                   [isHorizontal ? "top" : "left"]: isHorizontal ? 12 : 4,
                   fontSize: "10px",
-                  color: "#ddd",
+                  color: "currentColor",
                   whiteSpace: "nowrap",
                 }}
               >
@@ -207,7 +207,7 @@ const CanvasBoard: FC = () => {
   return (
     <div
       ref={containerRef}
-      className="fixed inset-0 overflow-hidden bg-[#2b2b2b]"
+      className="fixed inset-0 overflow-hidden dark:bg-neutral-800 bg-neutral-300"
       style={{
         top: "80px", // Leave space for topbar
         left: "48px", // Leave space for sidebar
@@ -215,7 +215,7 @@ const CanvasBoard: FC = () => {
     >
       {/* Origin corner */}
       <div
-        className="absolute bg-[#2b2b2b] border-b border-r border-[#1a1a1a] z-10"
+        className="absolute dark:bg-neutral-800 bg-neutral-300 border-b border-r border-neutral-800 dark:border-neutral-400 z-10"
         style={{
           width: `${RULER_SIZE}px`,
           height: `${RULER_SIZE}px`,
@@ -241,7 +241,7 @@ const CanvasBoard: FC = () => {
       {/* Canvas area */}
       <div
         ref={canvasAreaRef}
-        className="absolute bg-gray-200"
+        className="absolute dark:bg-neutral-600 bg-neutral-300"
         style={{
           cursor: isDragging ? "grabbing" : "grab",
           width: `${containerSize.width - RULER_SIZE}px`,
@@ -297,7 +297,7 @@ const CanvasBoard: FC = () => {
 
       {/* Zoom info (optional) */}
       <div
-        className="absolute bottom-4 right-4  dark:bg-neutral-900 bg-neutral-100 text-black dark:text-white px-3 py-2 rounded text-sm"
+        className="absolute bottom-4 right-4  dark:bg-neutral-900 bg-neutral-300 text-black dark:text-white px-3 py-2 rounded text-sm"
         style={{ zIndex: 20 }}
       >
         {Math.round(zoom * 100)}%
