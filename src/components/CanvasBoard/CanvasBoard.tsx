@@ -103,6 +103,45 @@ const Ruler: FC<RulerProps> = ({ direction, zoom, scroll, length }) => {
   );
 };
 
+interface GridProps {
+  zoom: number;
+  canvasWidth: number;
+  canvasHeight: number;
+  gridSize: number;
+  color?: string;
+}
+
+const Grid: FC<GridProps> = ({
+  zoom,
+  canvasWidth,
+  canvasHeight,
+  gridSize,
+  color = "rgba(0,0,0,0.15)",
+}) => {
+  return (
+    <div
+      className="absolute pointer-events-none top-0 left-0"
+      style={{
+        width: `${canvasWidth}px`,
+        height: `${canvasHeight}px`,
+        marginLeft: `${RULER_ORIGIN_OFFSET}px`,
+        // marginTop: `${RULER_ORIGIN_OFFSET}px`,
+        backgroundImage: `
+              linear-gradient(${color} ${1 / zoom}px, transparent ${
+          1 / zoom
+        }px),
+              linear-gradient(90deg, ${color} ${1 / zoom}px, transparent ${
+          1 / zoom
+        }px)
+            `,
+        // backgroundSize: `${20 * zoom}px ${20 * zoom}px`,
+        // backgroundSize: `${20 / zoom}px ${20 / zoom}px`,
+        backgroundSize: `${gridSize}px ${gridSize}px`,
+      }}
+    />
+  );
+};
+
 const CanvasBoard: FC = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasAreaRef = useRef<HTMLDivElement>(null);
@@ -274,25 +313,27 @@ const CanvasBoard: FC = () => {
             {/* Canvas content goes here */}
           </div>
           {/* Grid pattern overlay (optional) */}
-          <div
-            className="absolute pointer-events-none top-0 left-0"
-            style={{
-              width: `${canvasWidth}px`,
-              height: `${canvasHeight}px`,
-              marginLeft: `${RULER_ORIGIN_OFFSET}px`,
-              // marginTop: `${RULER_ORIGIN_OFFSET}px`,
-              backgroundImage: `
-              linear-gradient(rgba(0,0,0,0.05) ${1 / zoom}px, transparent ${
-                1 / zoom
-              }px),
-              linear-gradient(90deg, rgba(0,0,0,0.05) ${
-                1 / zoom
-              }px, transparent ${1 / zoom}px)
-            `,
-              // backgroundSize: `${20 * zoom}px ${20 * zoom}px`,
-              backgroundSize: `${20 / zoom}px ${20 / zoom}px`,
-            }}
+          <Grid
+            zoom={zoom}
+            gridSize={20}
+            canvasWidth={canvasWidth}
+            canvasHeight={canvasHeight}
           />
+          <Grid
+            zoom={zoom}
+            gridSize={20}
+            canvasWidth={canvasWidth}
+            canvasHeight={canvasHeight}
+          />
+          {zoom > 3 && (
+            <Grid
+              zoom={zoom}
+              gridSize={2}
+              canvasWidth={canvasWidth}
+              canvasHeight={canvasHeight}
+              color="rgba(0,0,0,0.1)"
+            />
+          )}
         </div>
       </div>
 
