@@ -261,10 +261,11 @@ const CanvasBoard: FC = () => {
         >
           {/* White canvas */}
           <div
+            className="dark:text-neutral-500 text-neutral-50"
             style={{
               width: `${canvasWidth}px`,
               height: `${canvasHeight}px`,
-              backgroundColor: "white",
+              backgroundColor: "currentColor",
               marginLeft: `${RULER_ORIGIN_OFFSET}px`,
               marginTop: `${RULER_ORIGIN_OFFSET}px`,
               boxShadow: "0 0 0 1px rgba(0,0,0,0.1)",
