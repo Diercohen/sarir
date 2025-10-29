@@ -5,8 +5,8 @@ import { ButtonGroup } from "../ui/button-group";
 
 const CommandBar: FC = () => {
   return (
-    <div className="px-2 fixed top-9 left-0 right-0 z-50 bg-neutral-700 py-2">
-      <ButtonGroup className="hidden sm:flex">
+    <div className="px-2 fixed top-9 left-0 right-0 z-50 dark:bg-neutral-700 bg-neutral-100 py-2">
+      <ButtonGroup className="hidden sm:flex dark:text-white text-black">
         <Button variant="default" size="icon" aria-label="Go Back">
           <Undo2 />
         </Button>

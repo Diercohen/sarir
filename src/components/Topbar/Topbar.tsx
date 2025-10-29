@@ -12,7 +12,7 @@ import GeneralSettings from "./GeneralSettings";
 
 const Topbar: FC = () => {
   return (
-    <Menubar className="border-0 text-white shadow-none px-2 fixed top-0 left-0 right-0 z-50 bg-neutral-700 rounded-none">
+    <Menubar className="border-0  shadow-none px-2 fixed top-0 left-0 right-0 z-50 dark:bg-neutral-700 bg-neutral-100 rounded-none">
       <div className=" w-full flex justify-between items-center">
         <div>
           <MenubarMenu>
