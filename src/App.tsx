@@ -1,6 +1,6 @@
 import type { FC } from "react";
 import "./App.css";
-import Canvas from "./components/Canvas/Canvas";
+import CanvasBoard from "./components/CanvasBoard/CanvasBoard";
 import { CommandBar } from "./components/CommandBar";
 import Panels from "./components/Panels/Panels";
 import Topbar from "./components/Topbar/Topbar";
@@ -11,7 +11,7 @@ const App: FC = () => {
       <Topbar />
       <CommandBar />
       <Panels />
-      <Canvas />
+      <CanvasBoard />
     </>
   );
 };
