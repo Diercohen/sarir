@@ -116,6 +116,7 @@ interface GridProps {
   canvasHeight: number;
   gridSize: number;
   color?: string;
+  zoomVisibilityThreshold?: number;
 }
 
 const Grid: FC<GridProps> = ({
@@ -124,10 +125,14 @@ const Grid: FC<GridProps> = ({
   canvasHeight,
   gridSize,
   color = "rgba(0,0,0,0.10)",
+  zoomVisibilityThreshold = 2,
 }) => {
   return (
     <div
-      className="absolute pointer-events-none top-0 left-0"
+      className={clsx(
+        "absolute pointer-events-none top-0 left-0 transition-opacity duration-1000",
+        zoom > zoomVisibilityThreshold ? "opacity-100" : "opacity-0"
+      )}
       style={{
         width: `${canvasWidth}px`,
         height: `${canvasHeight}px`,
@@ -321,25 +326,21 @@ const CanvasBoard: FC = () => {
           </div>
           {/* Grid pattern overlay (optional) */}
           <Grid
+            zoomVisibilityThreshold={0.6}
             zoom={zoom}
             gridSize={20}
             canvasWidth={canvasWidth}
             canvasHeight={canvasHeight}
           />
-          <div
-            className={clsx(
-              "absolute top-0 left-0 transition-opacity duration-1000",
-              zoom > 2 ? "opacity-100" : "opacity-0"
-            )}
-          >
-            <Grid
-              zoom={zoom}
-              gridSize={2.5}
-              canvasWidth={canvasWidth}
-              canvasHeight={canvasHeight}
-              color="rgba(0,0,0,0.05)"
-            />
-          </div>
+
+          <Grid
+            zoomVisibilityThreshold={2}
+            zoom={zoom}
+            gridSize={2.5}
+            canvasWidth={canvasWidth}
+            canvasHeight={canvasHeight}
+            color="rgba(0,0,0,0.05)"
+          />
         </div>
       </div>
 
