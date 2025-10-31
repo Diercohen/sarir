@@ -1,7 +1,16 @@
 import clsx from "clsx";
 import * as fabric from "fabric";
 import { useEffect, useRef, useState, type FC } from "react";
-import { add, addSVGImage, disposeCanvas, getCanvas, remove } from "./code";
+import {
+  add,
+  addSVGImage,
+  cloneActiveAndNudge,
+  disposeCanvas,
+  getActiveObject,
+  getCanvas,
+  nudgeActive,
+  remove,
+} from "./code";
 // import ReactIcon from "@/assets/react.svg?react";
 
 const RULER_SIZE = 24; // Size of ruler in pixels
@@ -301,6 +310,35 @@ const CanvasBoard: FC = () => {
   // Handle Delete/Backspace to remove active object(s)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      // Nudge with arrow keys when something is selected
+      if (
+        e.key === "ArrowUp" ||
+        e.key === "ArrowDown" ||
+        e.key === "ArrowLeft" ||
+        e.key === "ArrowRight"
+      ) {
+        try {
+          const active = getActiveObject();
+          if (!active) return;
+          e.preventDefault();
+          const step = e.shiftKey ? 10 : 1;
+          const dx =
+            e.key === "ArrowLeft" ? -step : e.key === "ArrowRight" ? step : 0;
+          const dy =
+            e.key === "ArrowUp" ? -step : e.key === "ArrowDown" ? step : 0;
+          if (e.altKey) {
+            // Clone + move
+            void cloneActiveAndNudge(dx, dy);
+          } else {
+            // Just move
+            nudgeActive(dx, dy);
+          }
+        } catch {
+          // Ignore if canvas not ready
+        }
+        return;
+      }
+
       if (e.key === "Delete" || e.key === "Backspace") {
         try {
           const canvas = getCanvas() as fabric.Canvas;

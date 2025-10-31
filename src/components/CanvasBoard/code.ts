@@ -17,18 +17,18 @@ const addSVGImage = (svgSrcArray: string[]) => {
   const canvas = getCanvas();
   const groupObjects: fabric.Object[] = [];
 
-  let loaded = 0;
-  const onAllLoaded = () => {
-    if (loaded === svgSrcArray.length) {
-      // Combine all loaded SVGs into one group
-      const group = new fabric.Group(groupObjects, {
-        left: 0,
-        top: 0,
-      });
-      canvas.add(group);
-      canvas.requestRenderAll();
-    }
-  };
+  // let loaded = 0;
+  // const onAllLoaded = () => {
+  //   if (loaded === svgSrcArray.length) {
+  //     // Combine all loaded SVGs into one group
+  //     const group = new fabric.Group(groupObjects, {
+  //       left: 0,
+  //       top: 0,
+  //     });
+  //     canvas.add(group);
+  //     canvas.requestRenderAll();
+  //   }
+  // };
 
   svgSrcArray.forEach((svgSrc) => {
     fabric.loadSVGFromURL(svgSrc).then(({ objects }) => {
@@ -45,7 +45,7 @@ const addSVGImage = (svgSrcArray: string[]) => {
         canvas.requestRenderAll();
 
         groupObjects.push(clone);
-        loaded += 1;
+        // loaded += 1;
         canvas.add(clone);
         canvas.requestRenderAll();
         // onAllLoaded();
@@ -59,6 +59,71 @@ const disposeCanvas = () => {
     canvasInstance.dispose();
     canvasInstance = null;
   }
+};
+
+const getActiveObject = () => {
+  const canvas = getCanvas();
+  return canvas.getActiveObject();
+};
+
+const nudgeActive = (dx: number, dy: number) => {
+  const canvas = getCanvas();
+  const active = canvas.getActiveObject();
+  if (!active) return;
+
+  // Move selection/group/object by delta
+  active.set({
+    left: (active.left ?? 0) + dx,
+    top: (active.top ?? 0) + dy,
+  } as Partial<fabric.Object>);
+  active.setCoords();
+  canvas.requestRenderAll();
+};
+
+const cloneActiveAndNudge = async (dx: number, dy: number) => {
+  const canvas = getCanvas();
+  const active = canvas.getActiveObject();
+  if (!active) return;
+
+  // Handle multi-select separately by cloning each object and creating a new selection
+  if (active.type === "activeSelection" || active.type === "activeselection") {
+    const selection = active as fabric.ActiveSelection;
+    const selectedObjects = selection.getObjects();
+
+    const clones: fabric.Object[] = [];
+    await Promise.all(
+      selectedObjects.map(
+        (obj) =>
+          new Promise<void>((resolve) => {
+            obj.clone().then((clone: fabric.Object) => {
+              clone.set({
+                left: (obj.left ?? 0) + dx,
+                top: (obj.top ?? 0) + dy,
+              } as Partial<fabric.Object>);
+              canvas.add(clone);
+              clones.push(clone);
+              resolve();
+            });
+          })
+      )
+    );
+
+    const newSelection = new fabric.ActiveSelection(clones, { canvas });
+    canvas.setActiveObject(newSelection);
+    canvas.requestRenderAll();
+    return;
+  }
+
+  // Single object or group
+  await active.clone().then((clone: fabric.Object) => {
+    clone.set({
+      left: (active.left ?? 0) + dx,
+      top: (active.top ?? 0) + dy,
+    } as Partial<fabric.Object>);
+    canvas.add(clone);
+    canvas.setActiveObject(clone);
+    canvas.requestRenderAll();
+  });
 };
 
 function add() {
@@ -153,11 +218,14 @@ export {
   add,
   addmore,
   addSVGImage,
+  cloneActiveAndNudge,
   discard,
   disposeCanvas,
+  getActiveObject,
   getCanvas,
   group,
   multiselect,
+  nudgeActive,
   remove,
   ungroup,
 };
