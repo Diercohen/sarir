@@ -344,6 +344,27 @@ const CanvasBoard: FC = () => {
           const canvas = getCanvas() as fabric.Canvas;
           const activeObject = canvas.getActiveObject();
           if (activeObject) {
+            // Don't remove object if it's a text object in editing mode
+            const isTextObject =
+              activeObject.type === "textbox" ||
+              activeObject.type === "itext" ||
+              activeObject.type === "text";
+
+            if (isTextObject) {
+              // Check if the text object is currently being edited
+              // canvas.isEditing tracks if any text object is in editing mode
+              const canvasIsEditing =
+                "isEditing" in canvas &&
+                (canvas as { isEditing?: boolean }).isEditing === true;
+              const objectIsEditing =
+                "isEditing" in activeObject &&
+                (activeObject as { isEditing?: boolean }).isEditing === true;
+              if (canvasIsEditing || objectIsEditing) {
+                // Let the text editing handle the delete key
+                return;
+              }
+            }
+
             e.preventDefault();
             remove();
           }
