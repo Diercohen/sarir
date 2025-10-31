@@ -442,13 +442,17 @@ const CanvasBoard: FC = () => {
           const canvas = getCanvas() as fabric.Canvas;
           const activeObject = canvas.getActiveObject();
           if (activeObject) {
-            // Don't remove object if it's a text object in editing mode
+            // Don't remove if it's a text object in editing mode
+            // (but allow deletion of multi-selection even if it contains text objects)
+            const isMultiSelection =
+              activeObject.type === "activeSelection" ||
+              activeObject.type === "activeselection";
             const isTextObject =
               activeObject.type === "textbox" ||
               activeObject.type === "itext" ||
               activeObject.type === "text";
 
-            if (isTextObject) {
+            if (!isMultiSelection && isTextObject) {
               // Check if the text object is currently being edited
               // canvas.isEditing tracks if any text object is in editing mode
               const canvasIsEditing =
@@ -465,6 +469,8 @@ const CanvasBoard: FC = () => {
 
             e.preventDefault();
             remove();
+            // Clear selection in context after deletion
+            clearSelection();
           }
         } catch {
           // If canvas not ready, ignore
@@ -474,7 +480,7 @@ const CanvasBoard: FC = () => {
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, []);
+  }, [clearSelection]);
 
   useEffect(() => {
     addSVGImage([

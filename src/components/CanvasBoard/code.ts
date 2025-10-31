@@ -323,7 +323,30 @@ const discard = () => {
 };
 const remove = () => {
   const canvas = getCanvas();
-  canvas.remove(canvas.getActiveObject() as fabric.FabricObject);
+  const active = canvas.getActiveObject();
+  if (!active) return;
+
+  const registry = LayerRegistry.getInstance();
+
+  // Handle multi-selection (ActiveSelection)
+  if (active.type === "activeSelection" || active.type === "activeselection") {
+    const selection = active as fabric.ActiveSelection;
+    const selectedObjects = selection.getObjects();
+
+    // Remove all objects from canvas and unregister their layers
+    selectedObjects.forEach((obj) => {
+      canvas.remove(obj);
+      registry.unregister(obj);
+    });
+
+    canvas.discardActiveObject();
+    canvas.requestRenderAll();
+    return;
+  }
+
+  // Handle single object or group
+  canvas.remove(active as fabric.FabricObject);
+  registry.unregister(active);
   canvas.requestRenderAll();
 };
 
