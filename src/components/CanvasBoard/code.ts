@@ -129,6 +129,13 @@ const cloneActiveAndNudge = async (dx: number, dy: number) => {
 function add() {
   const canvas = getCanvas();
   const { width, height } = canvas;
+  const textbox = new fabric.Textbox("سلام من به تو یار قدیمی", {
+    fill: "black",
+    top: 70,
+    left: 200,
+    direction: "rtl",
+    textAlign: "right",
+  });
   const red = new fabric.Rect({
     top: Math.random() * (height - 25),
     left: Math.random() * (width - 40),
@@ -150,7 +157,7 @@ function add() {
     height: 60,
     fill: "green",
   });
-  canvas.add(red, blue, green);
+  canvas.add(red, blue, green, textbox);
 }
 
 fabric.FabricObject.ownDefaults.transparentCorners = false;
