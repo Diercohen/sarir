@@ -228,6 +228,9 @@ const CanvasBoard: FC = () => {
     const handleMouseMove = (e: MouseEvent) => {
       if (!isDragging) return;
 
+      // Only pan if Command (metaKey) or Control key is pressed
+      if (!(e.metaKey || e.ctrlKey)) return;
+
       const deltaX = e.clientX - dragStart.x;
       const deltaY = e.clientY - dragStart.y;
 
