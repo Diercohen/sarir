@@ -320,7 +320,11 @@ const CanvasBoard: FC = () => {
   }, []);
 
   useEffect(() => {
-    addSVGImage(["/vite.svg", "/react.svg"]);
+    addSVGImage([
+      "/f2_skaf_emim.svg",
+      "/f2_z_sarkesh_mid_kaf.svg",
+      "/f2_emim_01.svg",
+    ]);
   }, []);
 
   return (

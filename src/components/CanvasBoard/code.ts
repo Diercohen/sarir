@@ -15,16 +15,40 @@ const getCanvas = () => {
 
 const addSVGImage = (svgSrcArray: string[]) => {
   const canvas = getCanvas();
+  const groupObjects: fabric.Object[] = [];
+
+  let loaded = 0;
+  const onAllLoaded = () => {
+    if (loaded === svgSrcArray.length) {
+      // Combine all loaded SVGs into one group
+      const group = new fabric.Group(groupObjects, {
+        left: 0,
+        top: 0,
+      });
+      canvas.add(group);
+      canvas.requestRenderAll();
+    }
+  };
+
   svgSrcArray.forEach((svgSrc) => {
     fabric.loadSVGFromURL(svgSrc).then(({ objects }) => {
       const obj = fabric.util.groupSVGElements(objects as fabric.Object[]);
-      obj.clone().then((clone) => {
+      obj.clone().then((clone: fabric.Object) => {
         clone.set({
           left: 0,
           top: 0,
-        });
+          scaleX: 0.1,
+          scaleY: 0.1,
+          // left: clone.width * loaded,
+          // top: clone.height * loaded,
+        } as Partial<fabric.Object>);
+        canvas.requestRenderAll();
+
+        groupObjects.push(clone);
+        loaded += 1;
         canvas.add(clone);
         canvas.requestRenderAll();
+        // onAllLoaded();
       });
     });
   });
