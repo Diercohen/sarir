@@ -1,4 +1,3 @@
-import * as fabric from "fabric";
 import { Eye, EyeOff, GripVertical, Lock, Trash2, Unlock } from "lucide-react";
 import React, {
   useEffect,
@@ -7,12 +6,13 @@ import React, {
   useState,
   type FC,
 } from "react";
+import { useAppContext } from "../../App.context";
 import { cn } from "../../lib/utils";
 import { LayerRegistry, type Layer } from "../../utils/LayerRegistry";
 
 const SideBar: FC = () => {
+  const { selectedLayerId, setSelectedLayerId } = useAppContext();
   const [layers, setLayers] = useState<Layer[]>([]);
-  const [selectedLayerId, setSelectedLayerId] = useState<string | null>(null);
   const [draggedLayerId, setDraggedLayerId] = useState<string | null>(null);
   const [dropTargetIndex, setDropTargetIndex] = useState<number | null>(null);
   const layerRefs = useRef<Map<string, HTMLDivElement>>(new Map());
@@ -64,99 +64,12 @@ const SideBar: FC = () => {
       previousOrderRef.current = currentOrder;
     });
 
-    // Listen for canvas selection changes
-    // Use a small delay to ensure canvas is initialized
-    let cleanupFn: (() => void) | null = null;
-    let timeoutId: ReturnType<typeof setTimeout> | null = null;
-
-    const setupCanvasListeners = (): void => {
-      const canvasElement = document.getElementById("canvas");
-      if (!canvasElement) {
-        // Retry after a short delay
-        timeoutId = setTimeout(setupCanvasListeners, 100);
-        return;
-      }
-
-      // @ts-expect-error - fabric stores instance on element
-      const fabricCanvas = canvasElement.__canvas;
-      if (!fabricCanvas) {
-        // Retry after a short delay
-        timeoutId = setTimeout(setupCanvasListeners, 100);
-        return;
-      }
-
-      const handleSelection = () => {
-        const active = fabricCanvas.getActiveObject();
-        if (active) {
-          // For groups and active selections, try to get the first object's layer
-          let targetObject: fabric.Object = active;
-
-          if (active.type === "group") {
-            const group = active as fabric.Group;
-            const groupObjects = group.getObjects();
-            if (groupObjects.length > 0) {
-              targetObject = groupObjects[0];
-            }
-          } else if (
-            active.type === "activeSelection" ||
-            active.type === "activeselection"
-          ) {
-            const selection = active as fabric.ActiveSelection;
-            const selectionObjects = selection.getObjects();
-            if (selectionObjects.length > 0) {
-              targetObject = selectionObjects[0];
-            }
-          }
-
-          const layer = registry.getLayerByObject(targetObject);
-          if (layer) {
-            setSelectedLayerId(layer.id);
-            // Scroll to selected layer after a short delay to ensure DOM is updated
-            setTimeout(() => {
-              scrollToLayer(layer.id);
-            }, 50);
-          } else {
-            // If the object itself is registered as a layer (like groups)
-            const directLayer = registry.getLayerByObject(active);
-            if (directLayer) {
-              setSelectedLayerId(directLayer.id);
-              setTimeout(() => {
-                scrollToLayer(directLayer.id);
-              }, 50);
-            } else {
-              setSelectedLayerId(null);
-            }
-          }
-        } else {
-          setSelectedLayerId(null);
-        }
-      };
-
-      const handleDeselection = () => {
-        setSelectedLayerId(null);
-      };
-
-      fabricCanvas.on("selection:created", handleSelection);
-      fabricCanvas.on("selection:updated", handleSelection);
-      fabricCanvas.on("selection:cleared", handleDeselection);
-
-      cleanupFn = () => {
-        fabricCanvas.off("selection:created", handleSelection);
-        fabricCanvas.off("selection:updated", handleSelection);
-        fabricCanvas.off("selection:cleared", handleDeselection);
-      };
-    };
-
-    setupCanvasListeners();
-
     return () => {
       unsubscribe();
-      if (timeoutId) clearTimeout(timeoutId);
-      if (cleanupFn) cleanupFn();
     };
   }, []);
 
-  // Scroll to selected layer when selectedLayerId changes
+  // Scroll to selected layer when selectedLayerId changes (from canvas selection)
   useEffect(() => {
     if (selectedLayerId) {
       // Use a small delay to ensure DOM has updated
@@ -205,7 +118,10 @@ const SideBar: FC = () => {
     registry.setLocked(layerId, !currentLocked);
   };
 
-  const handleSelect = (layerId: string) => {
+  const handleSelect = (layerId: string, e?: React.MouseEvent) => {
+    e?.preventDefault();
+    e?.stopPropagation();
+
     const registry = LayerRegistry.getInstance();
     registry.select(layerId);
     setSelectedLayerId(layerId);
@@ -479,7 +395,7 @@ const SideBar: FC = () => {
                         ? "transform 300ms cubic-bezier(0.4, 0, 0.2, 1), opacity 200ms"
                         : "opacity 200ms",
                     }}
-                    onClick={() => handleSelect(layer.id)}
+                    onClick={(e) => handleSelect(layer.id, e)}
                   >
                     {/* Drag Handle */}
                     <div className="opacity-0 group-hover:opacity-100 transition-opacity cursor-grab active:cursor-grabbing">

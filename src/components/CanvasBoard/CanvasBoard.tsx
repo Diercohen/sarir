@@ -1,6 +1,8 @@
 import clsx from "clsx";
 import * as fabric from "fabric";
 import { useEffect, useRef, useState, type FC } from "react";
+import { useAppContext } from "../../App.context";
+import { LayerRegistry } from "../../utils/LayerRegistry";
 import {
   add,
   addSVGImage,
@@ -169,6 +171,7 @@ const Grid: FC<GridProps> = ({
 const CanvasBoard: FC = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasAreaRef = useRef<HTMLDivElement>(null);
+  const { setSelectedLayerId } = useAppContext();
 
   const [zoom, setZoom] = useState(1);
   const [panX, setPanX] = useState(0);
@@ -306,6 +309,89 @@ const CanvasBoard: FC = () => {
       disposeCanvas();
     };
   }, []);
+
+  // Listen for canvas selection changes and update context
+  useEffect(() => {
+    let cleanupFn: (() => void) | null = null;
+    let timeoutId: ReturnType<typeof setTimeout> | null = null;
+
+    // Small delay to ensure canvas is initialized
+    const setupSelectionListener = () => {
+      try {
+        const canvas = getCanvas() as fabric.Canvas;
+        if (!canvas) {
+          timeoutId = setTimeout(setupSelectionListener, 100);
+          return;
+        }
+
+        const registry = LayerRegistry.getInstance();
+
+        const handleSelection = () => {
+          const active = canvas.getActiveObject();
+          if (active) {
+            // For groups and active selections, try to get the first object's layer
+            let targetObject: fabric.Object = active;
+
+            if (active.type === "group") {
+              const group = active as fabric.Group;
+              const groupObjects = group.getObjects();
+              if (groupObjects.length > 0) {
+                targetObject = groupObjects[0];
+              }
+            } else if (
+              active.type === "activeSelection" ||
+              active.type === "activeselection"
+            ) {
+              const selection = active as fabric.ActiveSelection;
+              const selectionObjects = selection.getObjects();
+              if (selectionObjects.length > 0) {
+                targetObject = selectionObjects[0];
+              }
+            }
+
+            const layer = registry.getLayerByObject(targetObject);
+            if (layer) {
+              setSelectedLayerId(layer.id);
+            } else {
+              // If the object itself is registered as a layer (like groups)
+              const directLayer = registry.getLayerByObject(active);
+              if (directLayer) {
+                setSelectedLayerId(directLayer.id);
+              } else {
+                setSelectedLayerId(null);
+              }
+            }
+          } else {
+            setSelectedLayerId(null);
+          }
+        };
+
+        const handleDeselection = () => {
+          setSelectedLayerId(null);
+        };
+
+        canvas.on("selection:created", handleSelection);
+        canvas.on("selection:updated", handleSelection);
+        canvas.on("selection:cleared", handleDeselection);
+
+        cleanupFn = () => {
+          canvas.off("selection:created", handleSelection);
+          canvas.off("selection:updated", handleSelection);
+          canvas.off("selection:cleared", handleDeselection);
+        };
+      } catch {
+        // Canvas not ready yet, retry
+        timeoutId = setTimeout(setupSelectionListener, 100);
+      }
+    };
+
+    timeoutId = setTimeout(setupSelectionListener, 100);
+
+    return () => {
+      if (timeoutId) clearTimeout(timeoutId);
+      if (cleanupFn) cleanupFn();
+    };
+  }, [setSelectedLayerId]);
 
   // Handle Delete/Backspace to remove active object(s)
   useEffect(() => {

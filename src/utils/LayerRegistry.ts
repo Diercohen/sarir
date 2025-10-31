@@ -190,13 +190,68 @@ export class LayerRegistry {
    */
   select(id: string): void {
     const canvas = this.getCanvas();
-    if (!canvas) return;
+    if (!canvas) {
+      console.warn("LayerRegistry.select: Canvas not available");
+      return;
+    }
 
     const layer = this.layers.get(id);
-    if (!layer) return;
+    if (!layer) {
+      console.warn(`LayerRegistry.select: Layer ${id} not found`);
+      return;
+    }
 
-    canvas.setActiveObject(layer.object);
-    canvas.requestRenderAll();
+    // Check if object exists in canvas
+    const canvasObjects = canvas.getObjects();
+    if (!canvasObjects.includes(layer.object)) {
+      console.warn("LayerRegistry.select: Object not in canvas");
+      return;
+    }
+
+    // If layer is locked, temporarily unlock to allow selection
+    const wasLocked = layer.locked;
+    if (wasLocked) {
+      layer.object.set({
+        selectable: true,
+        evented: true,
+      } as Partial<fabric.Object>);
+    }
+
+    // Discard current selection first
+    canvas.discardActiveObject();
+
+    // Use requestAnimationFrame to ensure canvas state is updated
+    requestAnimationFrame(() => {
+      // Set coordinates to ensure selection handles appear correctly
+      layer.object.setCoords();
+
+      // Set as active object
+      try {
+        canvas.setActiveObject(layer.object);
+        
+        // Focus the canvas element if possible
+        const canvasElement = document.getElementById("canvas");
+        if (canvasElement && canvasElement.focus) {
+          canvasElement.focus();
+        }
+
+        // Ensure canvas renders the selection
+        canvas.requestRenderAll();
+
+        // Re-apply lock state if it was locked (but keep it selected)
+        if (wasLocked) {
+          // Keep it selectable but make it non-evented so it can't be moved
+          layer.object.set({
+            selectable: true,
+            evented: false,
+          } as Partial<fabric.Object>);
+          canvas.requestRenderAll();
+        }
+      } catch (error) {
+        console.error("LayerRegistry.select: Error setting active object", error);
+      }
+    });
+
     this.notify();
   }
 

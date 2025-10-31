@@ -6,6 +6,8 @@ import { Language } from "./App.const";
 interface AppContextProps {
   language: Language;
   setLanguage: Dispatch<SetStateAction<Language>>;
+  selectedLayerId: string | null;
+  setSelectedLayerId: Dispatch<SetStateAction<string | null>>;
 }
 
 const AppContext = createContext<AppContextProps | undefined>(undefined);
@@ -14,12 +16,15 @@ export const AppContextProvider: React.FC<{ children: ReactNode }> = ({
   children,
 }) => {
   const [language, setLanguage] = useState(Language.EN);
+  const [selectedLayerId, setSelectedLayerId] = useState<string | null>(null);
   const value = useMemo(() => {
     return {
       language,
       setLanguage,
+      selectedLayerId,
+      setSelectedLayerId,
     };
-  }, [language, setLanguage]);
+  }, [language, setLanguage, selectedLayerId, setSelectedLayerId]);
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
 };
 
