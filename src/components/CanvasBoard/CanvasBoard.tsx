@@ -241,7 +241,6 @@ const CanvasBoard: FC = () => {
     const handleMouseMove = (e: MouseEvent) => {
       // Only pan if Command (metaKey) or Control key is pressed
       const isCommandOrControlPressed = e.metaKey || e.ctrlKey;
-      if (!isDragging) return;
 
       // Only pan if drag started outside #canvas-container
       const canvasContainer = document.getElementById("canvas-container");
@@ -261,6 +260,11 @@ const CanvasBoard: FC = () => {
           return;
         }
       }
+
+      // Only continue if dragging (panning) or if the user is moving a Fabric object (active selection)
+      const canvas = getCanvas() as fabric.Canvas;
+      const isObjectSelected = !!(canvas && canvas.getActiveObject());
+      if (isDragging && isObjectSelected) return;
 
       const deltaX = e.clientX - dragStart.x;
       const deltaY = e.clientY - dragStart.y;
