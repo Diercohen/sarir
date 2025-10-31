@@ -226,10 +226,28 @@ const CanvasBoard: FC = () => {
   // Handle mouse drag for panning
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
+      // Only pan if Command (metaKey) or Control key is pressed
+      const isCommandOrControlPressed = e.metaKey || e.ctrlKey;
       if (!isDragging) return;
 
-      // Only pan if Command (metaKey) or Control key is pressed
-      if (!(e.metaKey || e.ctrlKey)) return;
+      // Only pan if drag started outside #canvas-container
+      const canvasContainer = document.getElementById("canvas-container");
+      // If containerRef is available, prefer it (more React-like)
+      const containerElem = canvasContainer;
+
+      if (containerElem) {
+        const rect = containerElem.getBoundingClientRect();
+        // Only pan if the mouse is currently outside the canvas container
+        if (
+          e.clientX >= rect.left &&
+          e.clientX <= rect.right &&
+          e.clientY >= rect.top &&
+          e.clientY <= rect.bottom &&
+          !isCommandOrControlPressed
+        ) {
+          return;
+        }
+      }
 
       const deltaX = e.clientX - dragStart.x;
       const deltaY = e.clientY - dragStart.y;
@@ -336,6 +354,7 @@ const CanvasBoard: FC = () => {
         >
           {/* White canvas */}
           <div
+            id="canvas-container"
             className="dark:text-neutral-500 text-neutral-50"
             style={{
               width: `${canvasWidth}px`,
