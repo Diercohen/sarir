@@ -6,8 +6,12 @@ import { Language } from "./App.const";
 interface AppContextProps {
   language: Language;
   setLanguage: Dispatch<SetStateAction<Language>>;
-  selectedLayerId: string | null;
-  setSelectedLayerId: Dispatch<SetStateAction<string | null>>;
+  selectedLayerIds: Set<string>;
+  setSelectedLayerIds: Dispatch<SetStateAction<Set<string>>>;
+  // Convenience methods
+  selectLayer: (layerId: string) => void;
+  deselectLayer: (layerId: string) => void;
+  clearSelection: () => void;
 }
 
 const AppContext = createContext<AppContextProps | undefined>(undefined);
@@ -16,15 +20,37 @@ export const AppContextProvider: React.FC<{ children: ReactNode }> = ({
   children,
 }) => {
   const [language, setLanguage] = useState(Language.EN);
-  const [selectedLayerId, setSelectedLayerId] = useState<string | null>(null);
+  const [selectedLayerIds, setSelectedLayerIds] = useState<Set<string>>(
+    new Set()
+  );
+
+  const selectLayer = (layerId: string) => {
+    setSelectedLayerIds((prev) => new Set(prev).add(layerId));
+  };
+
+  const deselectLayer = (layerId: string) => {
+    setSelectedLayerIds((prev) => {
+      const next = new Set(prev);
+      next.delete(layerId);
+      return next;
+    });
+  };
+
+  const clearSelection = () => {
+    setSelectedLayerIds(new Set());
+  };
+
   const value = useMemo(() => {
     return {
       language,
       setLanguage,
-      selectedLayerId,
-      setSelectedLayerId,
+      selectedLayerIds,
+      setSelectedLayerIds,
+      selectLayer,
+      deselectLayer,
+      clearSelection,
     };
-  }, [language, setLanguage, selectedLayerId, setSelectedLayerId]);
+  }, [language, setLanguage, selectedLayerIds]);
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
 };
 

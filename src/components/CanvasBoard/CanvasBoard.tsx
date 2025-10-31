@@ -171,7 +171,7 @@ const Grid: FC<GridProps> = ({
 const CanvasBoard: FC = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasAreaRef = useRef<HTMLDivElement>(null);
-  const { setSelectedLayerId } = useAppContext();
+  const { setSelectedLayerIds, clearSelection } = useAppContext();
 
   const [zoom, setZoom] = useState(1);
   const [panX, setPanX] = useState(0);
@@ -329,45 +329,53 @@ const CanvasBoard: FC = () => {
         const handleSelection = () => {
           const active = canvas.getActiveObject();
           if (active) {
-            // For groups and active selections, try to get the first object's layer
-            let targetObject: fabric.Object = active;
+            const selectedLayerIdsSet = new Set<string>();
 
             if (active.type === "group") {
-              const group = active as fabric.Group;
-              const groupObjects = group.getObjects();
-              if (groupObjects.length > 0) {
-                targetObject = groupObjects[0];
+              // For groups, try to find the group as a layer first
+              const groupLayer = registry.getLayerByObject(active);
+              if (groupLayer) {
+                selectedLayerIdsSet.add(groupLayer.id);
+              } else {
+                // If group isn't registered, get layers for all objects in the group
+                const group = active as fabric.Group;
+                const groupObjects = group.getObjects();
+                groupObjects.forEach((obj) => {
+                  const layer = registry.getLayerByObject(obj);
+                  if (layer) {
+                    selectedLayerIdsSet.add(layer.id);
+                  }
+                });
               }
             } else if (
               active.type === "activeSelection" ||
               active.type === "activeselection"
             ) {
+              // For multi-selection, get layers for all selected objects
               const selection = active as fabric.ActiveSelection;
               const selectionObjects = selection.getObjects();
-              if (selectionObjects.length > 0) {
-                targetObject = selectionObjects[0];
+              selectionObjects.forEach((obj) => {
+                const layer = registry.getLayerByObject(obj);
+                if (layer) {
+                  selectedLayerIdsSet.add(layer.id);
+                }
+              });
+            } else {
+              // Single object selection
+              const layer = registry.getLayerByObject(active);
+              if (layer) {
+                selectedLayerIdsSet.add(layer.id);
               }
             }
 
-            const layer = registry.getLayerByObject(targetObject);
-            if (layer) {
-              setSelectedLayerId(layer.id);
-            } else {
-              // If the object itself is registered as a layer (like groups)
-              const directLayer = registry.getLayerByObject(active);
-              if (directLayer) {
-                setSelectedLayerId(directLayer.id);
-              } else {
-                setSelectedLayerId(null);
-              }
-            }
+            setSelectedLayerIds(selectedLayerIdsSet);
           } else {
-            setSelectedLayerId(null);
+            clearSelection();
           }
         };
 
         const handleDeselection = () => {
-          setSelectedLayerId(null);
+          clearSelection();
         };
 
         canvas.on("selection:created", handleSelection);
@@ -391,7 +399,7 @@ const CanvasBoard: FC = () => {
       if (timeoutId) clearTimeout(timeoutId);
       if (cleanupFn) cleanupFn();
     };
-  }, [setSelectedLayerId]);
+  }, [setSelectedLayerIds, clearSelection]);
 
   // Handle Delete/Backspace to remove active object(s)
   useEffect(() => {

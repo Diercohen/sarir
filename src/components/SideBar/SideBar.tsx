@@ -11,7 +11,7 @@ import { cn } from "../../lib/utils";
 import { LayerRegistry, type Layer } from "../../utils/LayerRegistry";
 
 const SideBar: FC = () => {
-  const { selectedLayerId, setSelectedLayerId } = useAppContext();
+  const { selectedLayerIds, setSelectedLayerIds } = useAppContext();
   const [layers, setLayers] = useState<Layer[]>([]);
   const [draggedLayerId, setDraggedLayerId] = useState<string | null>(null);
   const [dropTargetIndex, setDropTargetIndex] = useState<number | null>(null);
@@ -69,16 +69,18 @@ const SideBar: FC = () => {
     };
   }, []);
 
-  // Scroll to selected layer when selectedLayerId changes (from canvas selection)
+  // Scroll to first selected layer when selection changes (from canvas selection)
   useEffect(() => {
-    if (selectedLayerId) {
+    if (selectedLayerIds.size > 0) {
       // Use a small delay to ensure DOM has updated
+      // Scroll to the first selected layer
+      const firstSelectedId = Array.from(selectedLayerIds)[0];
       const timeoutId = setTimeout(() => {
-        scrollToLayer(selectedLayerId);
+        scrollToLayer(firstSelectedId);
       }, 100);
       return () => clearTimeout(timeoutId);
     }
-  }, [selectedLayerId]);
+  }, [selectedLayerIds]);
 
   const scrollToLayer = (layerId: string) => {
     const layerElement = layerRefs.current.get(layerId);
@@ -123,8 +125,29 @@ const SideBar: FC = () => {
     e?.stopPropagation();
 
     const registry = LayerRegistry.getInstance();
-    registry.select(layerId);
-    setSelectedLayerId(layerId);
+
+    // Check if this layer is already selected
+    const isSelected = selectedLayerIds.has(layerId);
+
+    if (e?.shiftKey || e?.metaKey || e?.ctrlKey) {
+      // Multi-select: toggle this layer
+      if (isSelected) {
+        // Deselect if already selected
+        setSelectedLayerIds((prev) => {
+          const next = new Set(prev);
+          next.delete(layerId);
+          return next;
+        });
+      } else {
+        // Add to selection
+        setSelectedLayerIds((prev) => new Set(prev).add(layerId));
+      }
+    } else {
+      // Single select: clear all and select only this one
+      setSelectedLayerIds(new Set([layerId]));
+      registry.select(layerId);
+    }
+
     scrollToLayer(layerId);
   };
 
@@ -384,7 +407,7 @@ const SideBar: FC = () => {
                     onDragEnd={handleDragEnd}
                     className={cn(
                       "group px-2 py-1.5 mx-1 rounded flex items-center gap-2 cursor-pointer transition-colors",
-                      selectedLayerId === layer.id
+                      selectedLayerIds.has(layer.id)
                         ? "bg-blue-100 dark:bg-blue-900/30"
                         : "hover:bg-neutral-200 dark:hover:bg-neutral-600",
                       isDragged && "opacity-50"
