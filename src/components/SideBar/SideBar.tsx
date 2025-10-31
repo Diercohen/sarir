@@ -140,12 +140,21 @@ const SideBar: FC = () => {
         });
       } else {
         // Add to selection
-        setSelectedLayerIds((prev) => new Set(prev).add(layerId));
+        const newSelection = new Set(selectedLayerIds);
+        newSelection.add(layerId);
+        setSelectedLayerIds(newSelection);
       }
     } else {
       // Single select: clear all and select only this one
-      setSelectedLayerIds(new Set([layerId]));
-      registry.select(layerId);
+      // Set the selection state first, then select on canvas
+      const newSelection = new Set([layerId]);
+      setSelectedLayerIds(newSelection);
+
+      // Use requestAnimationFrame to ensure React state update is committed
+      // before triggering canvas selection event
+      requestAnimationFrame(() => {
+        registry.select(layerId);
+      });
     }
 
     scrollToLayer(layerId);

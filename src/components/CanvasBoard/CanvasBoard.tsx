@@ -368,7 +368,11 @@ const CanvasBoard: FC = () => {
               }
             }
 
-            setSelectedLayerIds(selectedLayerIdsSet);
+            // Only update selection if we found at least one layer
+            // This prevents clearing selection when layer isn't found
+            if (selectedLayerIdsSet.size > 0) {
+              setSelectedLayerIds(selectedLayerIdsSet);
+            }
           } else {
             clearSelection();
           }
