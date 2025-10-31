@@ -1,5 +1,11 @@
 import { Eye, EyeOff, GripVertical, Lock, Trash2, Unlock } from "lucide-react";
-import { useEffect, useLayoutEffect, useRef, useState, type FC } from "react";
+import React, {
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type FC,
+} from "react";
 import { cn } from "../../lib/utils";
 import { LayerRegistry, type Layer } from "../../utils/LayerRegistry";
 
@@ -7,10 +13,12 @@ const SideBar: FC = () => {
   const [layers, setLayers] = useState<Layer[]>([]);
   const [selectedLayerId, setSelectedLayerId] = useState<string | null>(null);
   const [draggedLayerId, setDraggedLayerId] = useState<string | null>(null);
+  const [dropTargetIndex, setDropTargetIndex] = useState<number | null>(null);
   const layerRefs = useRef<Map<string, HTMLDivElement>>(new Map());
   const previousOrderRef = useRef<Map<string, number>>(new Map());
   const previousPositionsRef = useRef<Map<string, number>>(new Map());
   const isAnimatingRef = useRef(false);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const registry = LayerRegistry.getInstance();
@@ -132,29 +140,129 @@ const SideBar: FC = () => {
 
   const handleDragStart = (layerId: string) => {
     setDraggedLayerId(layerId);
+    const draggedIndex = layers.findIndex((l) => l.id === layerId);
+    setDropTargetIndex(draggedIndex);
   };
 
   const handleDragOver = (e: React.DragEvent, targetIndex: number) => {
     e.preventDefault();
+    e.stopPropagation(); // Prevent container handler from running
     if (!draggedLayerId) return;
 
     const draggedIndex = layers.findIndex((l) => l.id === draggedLayerId);
-    if (draggedIndex === -1 || draggedIndex === targetIndex) return;
+    if (draggedIndex === -1) return;
 
-    // Visual feedback could be added here
+    const layerElement = layerRefs.current.get(layers[targetIndex].id);
+    if (!layerElement) return;
+
+    const rect = layerElement.getBoundingClientRect();
+    const mouseY = e.clientY;
+    const layerMidpoint = rect.top + rect.height / 2;
+
+    let finalIndex = targetIndex;
+
+    // Determine if we should place before or after the target layer
+    if (mouseY < layerMidpoint) {
+      // Place before this layer
+      finalIndex = targetIndex;
+      // If dragging from below, don't adjust
+      if (draggedIndex > targetIndex) {
+        // Already correct
+      }
+    } else {
+      // Place after this layer
+      finalIndex = targetIndex + 1;
+      // If dragging from above, adjust for the gap
+      if (draggedIndex < targetIndex) {
+        finalIndex = targetIndex + 1;
+      }
+    }
+
+    // Don't show placeholder if it's the same as dragged position
+    if (finalIndex === draggedIndex || finalIndex === draggedIndex + 1) {
+      setDropTargetIndex(draggedIndex);
+    } else {
+      setDropTargetIndex(finalIndex);
+    }
   };
 
-  const handleDrop = (e: React.DragEvent, targetIndex: number) => {
+  const handleDragLeave = (e: React.DragEvent) => {
+    // Only clear if leaving the container, not just moving between children
+    if (!containerRef.current?.contains(e.relatedTarget as Node)) {
+      setDropTargetIndex(null);
+    }
+  };
+
+  const handleContainerDragOver = (e: React.DragEvent) => {
     e.preventDefault();
+    if (!draggedLayerId || !containerRef.current) return;
+
+    // Calculate drop position based on mouse Y coordinate
+    const mouseY = e.clientY;
+
+    const draggedIndex = layers.findIndex((l) => l.id === draggedLayerId);
+    if (draggedIndex === -1) return;
+
+    // Find which layer position the mouse is over
+    let targetIndex = layers.length;
+
+    // Check if mouse is above all layers
+    const firstLayer = layerRefs.current.get(layers[0]?.id);
+    if (firstLayer && mouseY < firstLayer.getBoundingClientRect().top) {
+      targetIndex = 0;
+    } else {
+      // Check each layer
+      for (let i = 0; i < layers.length; i++) {
+        const layerElement = layerRefs.current.get(layers[i].id);
+        if (layerElement) {
+          const layerRect = layerElement.getBoundingClientRect();
+          const layerMidpoint = layerRect.top + layerRect.height / 2;
+
+          if (mouseY < layerMidpoint) {
+            targetIndex = i;
+            break;
+          } else if (i === layers.length - 1) {
+            // Last layer, check if below it
+            if (mouseY > layerRect.bottom) {
+              targetIndex = layers.length;
+            } else {
+              targetIndex = i + 1;
+            }
+            break;
+          }
+        }
+      }
+    }
+
+    // Adjust target index based on dragged position
+    if (targetIndex !== draggedIndex && targetIndex !== draggedIndex + 1) {
+      // Adjust if dragging from above (items shift down)
+      if (draggedIndex < targetIndex) {
+        // No adjustment needed - target is already correct
+      } else {
+        // Dragging from below - no adjustment needed either
+      }
+      setDropTargetIndex(targetIndex);
+    }
+  };
+
+  const handleDrop = (e: React.DragEvent, targetIndex?: number) => {
+    e.preventDefault();
+    e.stopPropagation();
     if (!draggedLayerId) return;
 
     const registry = LayerRegistry.getInstance();
-    registry.reorder(draggedLayerId, targetIndex);
+    // Use dropTargetIndex if available, otherwise use the passed targetIndex
+    const finalIndex =
+      dropTargetIndex !== null ? dropTargetIndex : targetIndex ?? 0;
+    registry.reorder(draggedLayerId, finalIndex);
     setDraggedLayerId(null);
+    setDropTargetIndex(null);
   };
 
   const handleDragEnd = () => {
     setDraggedLayerId(null);
+    setDropTargetIndex(null);
   };
 
   // Animate layer order changes using FLIP technique
@@ -243,99 +351,128 @@ const SideBar: FC = () => {
             No layers
           </div>
         ) : (
-          <div className="py-2 relative">
-            {layers.map((layer, index) => (
-              <div
-                key={layer.id}
-                ref={(el) => {
-                  if (el) {
-                    layerRefs.current.set(layer.id, el);
-                  } else {
-                    layerRefs.current.delete(layer.id);
-                  }
-                }}
-                draggable
-                onDragStart={() => handleDragStart(layer.id)}
-                onDragOver={(e) => handleDragOver(e, index)}
-                onDrop={(e) => handleDrop(e, index)}
-                onDragEnd={handleDragEnd}
-                className={cn(
-                  "group px-2 py-1.5 mx-1 rounded flex items-center gap-2 cursor-pointer transition-colors",
-                  selectedLayerId === layer.id
-                    ? "bg-blue-100 dark:bg-blue-900/30"
-                    : "hover:bg-neutral-200 dark:hover:bg-neutral-600",
-                  draggedLayerId === layer.id && "opacity-50"
-                )}
-                style={{
-                  // Inline styles needed for dynamic animation transforms
-                  transition: isAnimatingRef.current
-                    ? "transform 300ms cubic-bezier(0.4, 0, 0.2, 1), opacity 200ms"
-                    : "opacity 200ms",
-                }}
-                onClick={() => handleSelect(layer.id)}
-              >
-                {/* Drag Handle */}
-                <div className="opacity-0 group-hover:opacity-100 transition-opacity cursor-grab active:cursor-grabbing">
-                  <GripVertical className="size-3.5 text-neutral-400" />
-                </div>
+          <div
+            ref={containerRef}
+            className="py-2 relative"
+            onDragOver={handleContainerDragOver}
+            onDragLeave={handleDragLeave}
+            onDrop={(e) => handleDrop(e)}
+          >
+            {layers.map((layer, index) => {
+              const draggedIndex = draggedLayerId
+                ? layers.findIndex((l) => l.id === draggedLayerId)
+                : -1;
+              const showPlaceholderBefore =
+                dropTargetIndex !== null &&
+                dropTargetIndex === index &&
+                draggedIndex !== index;
+              const isDragged = draggedLayerId === layer.id;
 
-                {/* Visibility Toggle */}
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleVisibilityToggle(layer.id, layer.visible);
-                  }}
-                  className="p-0.5 hover:bg-neutral-300 dark:hover:bg-neutral-500 rounded transition-colors"
-                  title={layer.visible ? "Hide layer" : "Show layer"}
-                >
-                  {layer.visible ? (
-                    <Eye className="size-4 text-neutral-700 dark:text-neutral-300" />
-                  ) : (
-                    <EyeOff className="size-4 text-neutral-400" />
+              return (
+                <React.Fragment key={layer.id}>
+                  {/* Drop placeholder */}
+                  {showPlaceholderBefore && (
+                    <div className="mx-1 my-1 h-8 border-2 border-dashed border-blue-500 dark:border-blue-400 rounded bg-blue-50/50 dark:bg-blue-900/20" />
                   )}
-                </button>
+                  <div
+                    ref={(el) => {
+                      if (el) {
+                        layerRefs.current.set(layer.id, el);
+                      } else {
+                        layerRefs.current.delete(layer.id);
+                      }
+                    }}
+                    draggable
+                    onDragStart={() => handleDragStart(layer.id)}
+                    onDragOver={(e) => handleDragOver(e, index)}
+                    onDrop={(e) => handleDrop(e)}
+                    onDragEnd={handleDragEnd}
+                    className={cn(
+                      "group px-2 py-1.5 mx-1 rounded flex items-center gap-2 cursor-pointer transition-colors",
+                      selectedLayerId === layer.id
+                        ? "bg-blue-100 dark:bg-blue-900/30"
+                        : "hover:bg-neutral-200 dark:hover:bg-neutral-600",
+                      isDragged && "opacity-50"
+                    )}
+                    style={{
+                      // Inline styles needed for dynamic animation transforms
+                      transition: isAnimatingRef.current
+                        ? "transform 300ms cubic-bezier(0.4, 0, 0.2, 1), opacity 200ms"
+                        : "opacity 200ms",
+                    }}
+                    onClick={() => handleSelect(layer.id)}
+                  >
+                    {/* Drag Handle */}
+                    <div className="opacity-0 group-hover:opacity-100 transition-opacity cursor-grab active:cursor-grabbing">
+                      <GripVertical className="size-3.5 text-neutral-400" />
+                    </div>
 
-                {/* Lock Toggle */}
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleLockToggle(layer.id, layer.locked);
-                  }}
-                  className="p-0.5 hover:bg-neutral-300 dark:hover:bg-neutral-500 rounded transition-colors"
-                  title={layer.locked ? "Unlock layer" : "Lock layer"}
-                >
-                  {layer.locked ? (
-                    <Lock className="size-4 text-neutral-700 dark:text-neutral-300" />
-                  ) : (
-                    <Unlock className="size-4 text-neutral-400" />
-                  )}
-                </button>
+                    {/* Visibility Toggle */}
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleVisibilityToggle(layer.id, layer.visible);
+                      }}
+                      className="p-0.5 hover:bg-neutral-300 dark:hover:bg-neutral-500 rounded transition-colors"
+                      title={layer.visible ? "Hide layer" : "Show layer"}
+                    >
+                      {layer.visible ? (
+                        <Eye className="size-4 text-neutral-700 dark:text-neutral-300" />
+                      ) : (
+                        <EyeOff className="size-4 text-neutral-400" />
+                      )}
+                    </button>
 
-                {/* Layer Name */}
-                <span
-                  className={cn(
-                    "flex-1 text-sm truncate",
-                    !layer.visible && "opacity-50 line-through",
-                    layer.locked && "opacity-60"
-                  )}
-                  title={layer.name}
-                >
-                  {layer.name}
-                </span>
+                    {/* Lock Toggle */}
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleLockToggle(layer.id, layer.locked);
+                      }}
+                      className="p-0.5 hover:bg-neutral-300 dark:hover:bg-neutral-500 rounded transition-colors"
+                      title={layer.locked ? "Unlock layer" : "Lock layer"}
+                    >
+                      {layer.locked ? (
+                        <Lock className="size-4 text-neutral-700 dark:text-neutral-300" />
+                      ) : (
+                        <Unlock className="size-4 text-neutral-400" />
+                      )}
+                    </button>
 
-                {/* Delete Button */}
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleDelete(layer.id);
-                  }}
-                  className="opacity-0 group-hover:opacity-100 p-1 hover:bg-red-100 dark:hover:bg-red-900/30 rounded transition-all text-red-600 dark:text-red-400"
-                  title="Delete layer"
-                >
-                  <Trash2 className="size-3.5" />
-                </button>
-              </div>
-            ))}
+                    {/* Layer Name */}
+                    <span
+                      className={cn(
+                        "flex-1 text-sm truncate",
+                        !layer.visible && "opacity-50 line-through",
+                        layer.locked && "opacity-60"
+                      )}
+                      title={layer.name}
+                    >
+                      {layer.name}
+                    </span>
+
+                    {/* Delete Button */}
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDelete(layer.id);
+                      }}
+                      className="opacity-0 group-hover:opacity-100 p-1 hover:bg-red-100 dark:hover:bg-red-900/30 rounded transition-all text-red-600 dark:text-red-400"
+                      title="Delete layer"
+                    >
+                      <Trash2 className="size-3.5" />
+                    </button>
+                  </div>
+                  {/* Show placeholder after last item if dragging to the end */}
+                  {index === layers.length - 1 &&
+                    dropTargetIndex !== null &&
+                    dropTargetIndex === layers.length &&
+                    draggedIndex !== layers.length - 1 && (
+                      <div className="mx-1 my-1 h-8 border-2 border-dashed border-blue-500 dark:border-blue-400 rounded bg-blue-50/50 dark:bg-blue-900/20" />
+                    )}
+                </React.Fragment>
+              );
+            })}
           </div>
         )}
       </div>
