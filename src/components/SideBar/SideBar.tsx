@@ -1,3 +1,4 @@
+import * as fabric from "fabric";
 import { Eye, EyeOff, GripVertical, Lock, Trash2, Unlock } from "lucide-react";
 import React, {
   useEffect,
@@ -19,6 +20,7 @@ const SideBar: FC = () => {
   const previousPositionsRef = useRef<Map<string, number>>(new Map());
   const isAnimatingRef = useRef(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const registry = LayerRegistry.getInstance();
@@ -86,8 +88,45 @@ const SideBar: FC = () => {
       const handleSelection = () => {
         const active = fabricCanvas.getActiveObject();
         if (active) {
-          const layer = registry.getLayerByObject(active);
-          setSelectedLayerId(layer?.id || null);
+          // For groups and active selections, try to get the first object's layer
+          let targetObject: fabric.Object = active;
+
+          if (active.type === "group") {
+            const group = active as fabric.Group;
+            const groupObjects = group.getObjects();
+            if (groupObjects.length > 0) {
+              targetObject = groupObjects[0];
+            }
+          } else if (
+            active.type === "activeSelection" ||
+            active.type === "activeselection"
+          ) {
+            const selection = active as fabric.ActiveSelection;
+            const selectionObjects = selection.getObjects();
+            if (selectionObjects.length > 0) {
+              targetObject = selectionObjects[0];
+            }
+          }
+
+          const layer = registry.getLayerByObject(targetObject);
+          if (layer) {
+            setSelectedLayerId(layer.id);
+            // Scroll to selected layer after a short delay to ensure DOM is updated
+            setTimeout(() => {
+              scrollToLayer(layer.id);
+            }, 50);
+          } else {
+            // If the object itself is registered as a layer (like groups)
+            const directLayer = registry.getLayerByObject(active);
+            if (directLayer) {
+              setSelectedLayerId(directLayer.id);
+              setTimeout(() => {
+                scrollToLayer(directLayer.id);
+              }, 50);
+            } else {
+              setSelectedLayerId(null);
+            }
+          }
         } else {
           setSelectedLayerId(null);
         }
@@ -117,6 +156,45 @@ const SideBar: FC = () => {
     };
   }, []);
 
+  // Scroll to selected layer when selectedLayerId changes
+  useEffect(() => {
+    if (selectedLayerId) {
+      // Use a small delay to ensure DOM has updated
+      const timeoutId = setTimeout(() => {
+        scrollToLayer(selectedLayerId);
+      }, 100);
+      return () => clearTimeout(timeoutId);
+    }
+  }, [selectedLayerId]);
+
+  const scrollToLayer = (layerId: string) => {
+    const layerElement = layerRefs.current.get(layerId);
+    const scrollContainer = scrollContainerRef.current;
+
+    if (layerElement && scrollContainer) {
+      const containerRect = scrollContainer.getBoundingClientRect();
+      const elementRect = layerElement.getBoundingClientRect();
+
+      // Check if element is outside visible area
+      const isAboveView = elementRect.top < containerRect.top;
+      const isBelowView = elementRect.bottom > containerRect.bottom;
+
+      if (isAboveView || isBelowView) {
+        // Calculate scroll position to center the element
+        const elementTop = layerElement.offsetTop;
+        const elementHeight = layerElement.offsetHeight;
+        const containerHeight = scrollContainer.clientHeight;
+        const scrollPosition =
+          elementTop - containerHeight / 2 + elementHeight / 2;
+
+        scrollContainer.scrollTo({
+          top: Math.max(0, scrollPosition),
+          behavior: "smooth",
+        });
+      }
+    }
+  };
+
   const handleVisibilityToggle = (layerId: string, currentVisible: boolean) => {
     const registry = LayerRegistry.getInstance();
     registry.setVisibility(layerId, !currentVisible);
@@ -131,6 +209,7 @@ const SideBar: FC = () => {
     const registry = LayerRegistry.getInstance();
     registry.select(layerId);
     setSelectedLayerId(layerId);
+    scrollToLayer(layerId);
   };
 
   const handleDelete = (layerId: string) => {
@@ -345,7 +424,7 @@ const SideBar: FC = () => {
       </div>
 
       {/* Layers List */}
-      <div className="flex-1 overflow-y-auto">
+      <div ref={scrollContainerRef} className="flex-1 overflow-y-auto">
         {layers.length === 0 ? (
           <div className="px-4 py-8 text-center text-sm text-neutral-500 dark:text-neutral-400">
             No layers
