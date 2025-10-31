@@ -228,7 +228,7 @@ export class LayerRegistry {
       // Set as active object
       try {
         canvas.setActiveObject(layer.object);
-        
+
         // Focus the canvas element if possible
         const canvasElement = document.getElementById("canvas");
         if (canvasElement && canvasElement.focus) {
@@ -248,11 +248,127 @@ export class LayerRegistry {
           canvas.requestRenderAll();
         }
       } catch (error) {
-        console.error("LayerRegistry.select: Error setting active object", error);
+        console.error(
+          "LayerRegistry.select: Error setting active object",
+          error
+        );
       }
     });
 
     this.notify();
+  }
+
+  /**
+   * Select multiple layers (creates an ActiveSelection)
+   */
+  selectMultiple(ids: string[]): void {
+    const canvas = this.getCanvas();
+    if (!canvas) {
+      console.warn("LayerRegistry.selectMultiple: Canvas not available");
+      return;
+    }
+
+    if (ids.length === 0) {
+      canvas.discardActiveObject();
+      canvas.requestRenderAll();
+      return;
+    }
+
+    if (ids.length === 1) {
+      // Single selection, use the regular select method
+      this.select(ids[0]);
+      return;
+    }
+
+    // Get all layer objects
+    const layerObjects: fabric.Object[] = [];
+    const lockedLayers: Array<{ layer: Layer; wasLocked: boolean }> = [];
+
+    for (const id of ids) {
+      const layer = this.layers.get(id);
+      if (!layer) {
+        console.warn(`LayerRegistry.selectMultiple: Layer ${id} not found`);
+        continue;
+      }
+
+      // Check if object exists in canvas
+      const canvasObjects = canvas.getObjects();
+      if (!canvasObjects.includes(layer.object)) {
+        console.warn(
+          `LayerRegistry.selectMultiple: Object for layer ${id} not in canvas`
+        );
+        continue;
+      }
+
+      // Temporarily unlock locked layers
+      if (layer.locked) {
+        layer.object.set({
+          selectable: true,
+          evented: true,
+        } as Partial<fabric.Object>);
+        lockedLayers.push({ layer, wasLocked: true });
+      }
+
+      layerObjects.push(layer.object);
+    }
+
+    if (layerObjects.length === 0) {
+      console.warn("LayerRegistry.selectMultiple: No valid objects to select");
+      return;
+    }
+
+    // Discard current selection first
+    canvas.discardActiveObject();
+
+    // Use requestAnimationFrame to ensure canvas state is updated
+    requestAnimationFrame(() => {
+      try {
+        // Set coordinates for all objects
+        layerObjects.forEach((obj) => obj.setCoords());
+
+        // Create ActiveSelection with all objects
+        const activeSelection = new fabric.ActiveSelection(layerObjects, {
+          canvas: canvas,
+        });
+        canvas.setActiveObject(activeSelection);
+
+        // Focus the canvas element if possible
+        const canvasElement = document.getElementById("canvas");
+        if (canvasElement && canvasElement.focus) {
+          canvasElement.focus();
+        }
+
+        // Ensure canvas renders the selection
+        canvas.requestRenderAll();
+
+        // Re-apply lock state for locked layers (but keep them selected)
+        lockedLayers.forEach(({ layer }) => {
+          // Keep it selectable but make it non-evented so it can't be moved
+          layer.object.set({
+            selectable: true,
+            evented: false,
+          } as Partial<fabric.Object>);
+        });
+        canvas.requestRenderAll();
+      } catch (error) {
+        console.error(
+          "LayerRegistry.selectMultiple: Error setting active selection",
+          error
+        );
+      }
+    });
+
+    this.notify();
+  }
+
+  /**
+   * Clear canvas selection
+   */
+  clearSelection(): void {
+    const canvas = this.getCanvas();
+    if (!canvas) return;
+    canvas.discardActiveObject();
+    canvas.requestRenderAll();
   }
 
   /**
@@ -296,13 +412,14 @@ export class LayerRegistry {
       text: "Text",
       itext: "Text",
       group: "Group",
-      "activeSelection": "Selection",
+      activeSelection: "Selection",
       "fabric-image": "Image",
     };
 
-    const baseName = typeMap[type] || type.charAt(0).toUpperCase() + type.slice(1);
-    const count = Array.from(this.layers.values()).filter(
-      (l) => l.name.startsWith(baseName)
+    const baseName =
+      typeMap[type] || type.charAt(0).toUpperCase() + type.slice(1);
+    const count = Array.from(this.layers.values()).filter((l) =>
+      l.name.startsWith(baseName)
     ).length;
 
     return count > 0 ? `${baseName} ${count + 1}` : baseName;
@@ -317,7 +434,9 @@ export class LayerRegistry {
     this.canvasInstance = canvas;
     // Store reference on canvas element for backward compatibility
     if (canvas) {
-      const canvasElement = document.getElementById("canvas") as HTMLCanvasElement | null;
+      const canvasElement = document.getElementById(
+        "canvas"
+      ) as HTMLCanvasElement | null;
       if (canvasElement) {
         // @ts-expect-error - store instance for external access
         canvasElement.__canvas = canvas;
@@ -330,11 +449,13 @@ export class LayerRegistry {
    */
   private getCanvas(): fabric.Canvas | null {
     if (this.canvasInstance) return this.canvasInstance;
-    
+
     try {
-      const canvasElement = document.getElementById("canvas") as HTMLCanvasElement | null;
+      const canvasElement = document.getElementById(
+        "canvas"
+      ) as HTMLCanvasElement | null;
       if (!canvasElement) return null;
-      
+
       // Try to get existing fabric instance
       // @ts-expect-error - fabric stores instance on element
       const existingCanvas = canvasElement.__canvas;
@@ -342,7 +463,7 @@ export class LayerRegistry {
         this.canvasInstance = existingCanvas;
         return existingCanvas;
       }
-      
+
       return null;
     } catch {
       return null;
@@ -357,9 +478,6 @@ export class LayerRegistry {
     if (!canvas) return;
 
     const canvasObjects = canvas.getObjects();
-    const registryObjectIds = new Set(
-      Array.from(this.layers.values()).map((l) => l.object)
-    );
 
     // Remove layers for objects that no longer exist in canvas
     this.layers.forEach((layer, id) => {
@@ -378,4 +496,3 @@ export class LayerRegistry {
     this.notify();
   }
 }
-

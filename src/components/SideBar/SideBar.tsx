@@ -129,33 +129,37 @@ const SideBar: FC = () => {
     // Check if this layer is already selected
     const isSelected = selectedLayerIds.has(layerId);
 
+    let newSelection: Set<string>;
+
     if (e?.shiftKey || e?.metaKey || e?.ctrlKey) {
       // Multi-select: toggle this layer
       if (isSelected) {
         // Deselect if already selected
-        setSelectedLayerIds((prev) => {
-          const next = new Set(prev);
-          next.delete(layerId);
-          return next;
-        });
+        newSelection = new Set(selectedLayerIds);
+        newSelection.delete(layerId);
       } else {
         // Add to selection
-        const newSelection = new Set(selectedLayerIds);
+        newSelection = new Set(selectedLayerIds);
         newSelection.add(layerId);
-        setSelectedLayerIds(newSelection);
       }
     } else {
       // Single select: clear all and select only this one
-      // Set the selection state first, then select on canvas
-      const newSelection = new Set([layerId]);
-      setSelectedLayerIds(newSelection);
-
-      // Use requestAnimationFrame to ensure React state update is committed
-      // before triggering canvas selection event
-      requestAnimationFrame(() => {
-        registry.select(layerId);
-      });
+      newSelection = new Set([layerId]);
     }
+
+    // Update selection state
+    setSelectedLayerIds(newSelection);
+
+    // Update canvas selection after state update
+    requestAnimationFrame(() => {
+      if (newSelection.size === 0) {
+        // Clear selection
+        registry.clearSelection();
+      } else {
+        // Select on canvas (single or multiple)
+        registry.selectMultiple(Array.from(newSelection));
+      }
+    });
 
     scrollToLayer(layerId);
   };
