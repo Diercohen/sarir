@@ -261,10 +261,18 @@ const CanvasBoard: FC = () => {
         }
       }
 
-      // Only continue if dragging (panning) or if the user is moving a Fabric object (active selection)
+      // Only continue if dragging (panning) or if the user is moving a Fabric object (i.e. dragging a selected object)
       const canvas = getCanvas() as fabric.Canvas;
-      const isObjectSelected = !!(canvas && canvas.getActiveObject());
-      if (isDragging && isObjectSelected) return;
+      let isObjectBeingDragged = false;
+      if (canvas) {
+        const activeObj = canvas.getActiveObject();
+        if (activeObj && (activeObj.__corner || activeObj.isMoving)) {
+          // __moving may be true during object drag in fabric.js, __corner is set while scaling/transforming
+          isObjectBeingDragged = true;
+        }
+        console.log("isObjectBeingDragged", activeObj);
+      }
+      if (isDragging && isObjectBeingDragged) return;
 
       const deltaX = e.clientX - dragStart.x;
       const deltaY = e.clientY - dragStart.y;
