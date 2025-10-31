@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   version="1.0"
+   width="159mm"
+   height="418mm"
+   id="svg7"
+   sodipodi:docname="f2_emim_01.emf"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview9"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:document-units="mm"
+     showgrid="false" />
+  <defs
+     id="defs3">
+    <pattern
+       id="EMFhbasepattern"
+       patternUnits="userSpaceOnUse"
+       width="6"
+       height="6"
+       x="0"
+       y="0" />
+  </defs>
+  <path
+     style="fill:#000000;fill-rule:nonzero;fill-opacity:1;stroke:none;"
+     d="  M 333.27753,165.51877   C 341.43747,141.51895 403.11701,41.679691 426.79684,15.359886   C 439.67674,0.95999289 454.31663,-2.6399804 481.03644,1.6799876   C 543.83597,11.919912 609.91548,67.919497 599.19556,117.83913   C 588.71564,166.39877 503.35627,241.19821 458.7966,258.55808   C 426.31684,269.678 396.55706,282.07791 352.79739,299.27778   C 127.83905,387.99713 60.079555,520.55614 48.319642,681.83495   C 39.11971,807.83402 36.39973,978.39275 36.239732,1182.4712   C 36.079733,1339.8301 33.679751,1464.2292 31.199769,1503.9889   C 29.67978,1530.2287 26.319805,1572.3084 24.799816,1575.5883   C 23.039829,1579.4283 16.959874,1579.7483 15.439886,1571.2684   C 13.839897,1562.7884 -4.1599692,1180.2313 0.87999348,920.87318   C 3.8399716,769.2743 -29.919778,387.99713 333.27753,165.51877   z "
+     id="path5" />
+</svg>
