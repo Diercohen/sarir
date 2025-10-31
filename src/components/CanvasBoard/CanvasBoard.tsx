@@ -17,6 +17,7 @@ import {
 
 const RULER_SIZE = 24; // Size of ruler in pixels
 const RULER_ORIGIN_OFFSET = 50; // Offset from 0,0
+const INITIAL_ZOOM: number = 1;
 
 interface RulerProps {
   direction: "horizontal" | "vertical";
@@ -173,7 +174,7 @@ const CanvasBoard: FC = () => {
   const canvasAreaRef = useRef<HTMLDivElement>(null);
   const { setSelectedLayerIds, clearSelection } = useAppContext();
 
-  const [zoom, setZoom] = useState(1);
+  const [zoom, setZoom] = useState(INITIAL_ZOOM);
   const [panX, setPanX] = useState(0);
   const [panY, setPanY] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
@@ -292,7 +293,7 @@ const CanvasBoard: FC = () => {
   };
 
   const resetZoom = () => {
-    setZoom(1);
+    setZoom(INITIAL_ZOOM);
     setPanX(0);
     setPanY(0);
     setIsDragging(false);
