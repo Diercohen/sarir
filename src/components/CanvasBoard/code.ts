@@ -1,4 +1,5 @@
 import * as fabric from "fabric";
+import { LayerRegistry } from "../../utils/LayerRegistry";
 
 // Keep a single module-scoped instance to avoid re-initializing
 let canvasInstance: fabric.Canvas | null = null;
@@ -10,7 +11,56 @@ const getCanvas = () => {
     throw new Error("Canvas element with id 'canvas' not found");
   }
   canvasInstance = new fabric.Canvas(element);
+
+  // Register canvas with LayerRegistry
+  const registry = LayerRegistry.getInstance();
+  registry.setCanvas(canvasInstance);
+
+  // Set up canvas event listeners for layer tracking
+  setupCanvasEventListeners(canvasInstance, registry);
+
   return canvasInstance as fabric.Canvas;
+};
+
+const setupCanvasEventListeners = (
+  canvas: fabric.Canvas,
+  registry: LayerRegistry
+) => {
+  // Register objects when added to canvas
+  canvas.on("object:added", (e) => {
+    if (e.target) {
+      // Only register if not already registered
+      if (!registry.getLayerByObject(e.target)) {
+        registry.register(e.target);
+      }
+    }
+  });
+
+  // Unregister objects when removed from canvas
+  canvas.on("object:removed", (e) => {
+    if (e.target) {
+      registry.unregister(e.target);
+    }
+  });
+
+  // Sync when objects are modified (moved, resized, etc.)
+  canvas.on("object:modified", () => {
+    registry.syncWithCanvas();
+  });
+
+  // Sync layer order when rendering (handles z-order changes)
+  // This is a catch-all for any z-order changes that might occur
+  let syncTimeout: ReturnType<typeof setTimeout> | null = null;
+  const debouncedSync = () => {
+    if (syncTimeout) clearTimeout(syncTimeout);
+    syncTimeout = setTimeout(() => {
+      registry.syncWithCanvas();
+    }, 100);
+  };
+
+  // Listen for selection changes which might indicate z-order updates
+  canvas.on("selection:created", debouncedSync);
+  canvas.on("selection:updated", debouncedSync);
 };
 
 const addSVGImage = (svgSrcArray: string[]) => {
@@ -30,7 +80,8 @@ const addSVGImage = (svgSrcArray: string[]) => {
   //   }
   // };
 
-  svgSrcArray.forEach((svgSrc) => {
+  const registry = LayerRegistry.getInstance();
+  svgSrcArray.forEach((svgSrc, index) => {
     fabric.loadSVGFromURL(svgSrc).then(({ objects }) => {
       const obj = fabric.util.groupSVGElements(objects as fabric.Object[]);
       obj.clone().then((clone: fabric.Object) => {
@@ -47,6 +98,10 @@ const addSVGImage = (svgSrcArray: string[]) => {
         groupObjects.push(clone);
         // loaded += 1;
         canvas.add(clone);
+        // Register with layer registry
+        const fileName =
+          svgSrc.split("/").pop()?.replace(".svg", "") || `SVG ${index + 1}`;
+        registry.register(clone, fileName);
         canvas.requestRenderAll();
         // onAllLoaded();
       });
@@ -56,6 +111,9 @@ const addSVGImage = (svgSrcArray: string[]) => {
 
 const disposeCanvas = () => {
   if (canvasInstance) {
+    const registry = LayerRegistry.getInstance();
+    registry.clear();
+    registry.setCanvas(null); // Reset canvas reference
     canvasInstance.dispose();
     canvasInstance = null;
   }
@@ -82,6 +140,7 @@ const nudgeActive = (dx: number, dy: number) => {
 
 const cloneActiveAndNudge = async (dx: number, dy: number) => {
   const canvas = getCanvas();
+  const registry = LayerRegistry.getInstance();
   const active = canvas.getActiveObject();
   if (!active) return;
 
@@ -101,6 +160,14 @@ const cloneActiveAndNudge = async (dx: number, dy: number) => {
                 top: (obj.top ?? 0) + dy,
               } as Partial<fabric.Object>);
               canvas.add(clone);
+
+              // Register cloned objects
+              const originalLayer = registry.getLayerByObject(obj);
+              const name = originalLayer
+                ? `${originalLayer.name} copy`
+                : undefined;
+              registry.register(clone, name);
+
               clones.push(clone);
               resolve();
             });
@@ -121,6 +188,12 @@ const cloneActiveAndNudge = async (dx: number, dy: number) => {
       top: (active.top ?? 0) + dy,
     } as Partial<fabric.Object>);
     canvas.add(clone);
+
+    // Register cloned object
+    const originalLayer = registry.getLayerByObject(active);
+    const name = originalLayer ? `${originalLayer.name} copy` : undefined;
+    registry.register(clone, name);
+
     canvas.setActiveObject(clone);
     canvas.requestRenderAll();
   });
@@ -128,6 +201,7 @@ const cloneActiveAndNudge = async (dx: number, dy: number) => {
 
 function add() {
   const canvas = getCanvas();
+  const registry = LayerRegistry.getInstance();
   const { width, height } = canvas;
   const textbox = new fabric.Textbox("سلام من به تو یار قدیمی", {
     fill: "black",
@@ -158,6 +232,14 @@ function add() {
     fill: "green",
   });
   canvas.add(red, blue, green, textbox);
+
+  // Register all objects with layer registry
+  // Note: object:added event will also register them, but we do it explicitly here
+  // to ensure they're registered immediately
+  registry.register(textbox, "Text");
+  registry.register(red, "Red Rectangle");
+  registry.register(blue, "Blue Rectangle");
+  registry.register(green, "Green Rectangle");
 }
 
 fabric.FabricObject.ownDefaults.transparentCorners = false;
@@ -178,6 +260,7 @@ const multiselect = () => {
 
 const group = () => {
   const canvas = getCanvas();
+  const registry = LayerRegistry.getInstance();
   if (!canvas.getActiveObject()) {
     return;
   }
@@ -188,22 +271,45 @@ const group = () => {
   ) {
     return;
   }
-  const group = new fabric.Group(
-    (canvas.getActiveObject() as fabric.ActiveSelection)?.removeAll()
-  );
+  const selection = canvas.getActiveObject() as fabric.ActiveSelection;
+  const objects = selection.getObjects();
+
+  // Unregister individual objects before grouping
+  objects.forEach((obj) => {
+    registry.unregister(obj);
+  });
+
+  const group = new fabric.Group(selection.removeAll());
   canvas.add(group);
+
+  // Register the new group
+  registry.register(group, "Group");
+
   canvas.setActiveObject(group);
   canvas.requestRenderAll();
 };
 
 const ungroup = () => {
   const canvas = getCanvas();
+  const registry = LayerRegistry.getInstance();
   const group = canvas.getActiveObject();
   if (!group || group.type !== "group") {
     return;
   }
+
+  // Unregister the group
+  registry.unregister(group);
+
+  const groupObj = group as fabric.Group;
+  const objects = groupObj.getObjects();
   canvas.remove(group);
-  const sel = new fabric.ActiveSelection((group as fabric.Group)?.removeAll(), {
+
+  // Register all ungrouped objects
+  objects.forEach((obj) => {
+    registry.register(obj);
+  });
+
+  const sel = new fabric.ActiveSelection(objects, {
     canvas: canvas,
   });
   canvas.setActiveObject(sel);

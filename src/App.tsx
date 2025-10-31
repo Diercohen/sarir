@@ -3,6 +3,7 @@ import "./App.css";
 import CanvasBoard from "./components/CanvasBoard/CanvasBoard";
 import { CommandBar } from "./components/CommandBar";
 import Panels from "./components/Panels/Panels";
+import SideBar from "./components/SideBar";
 import Topbar from "./components/Topbar/Topbar";
 
 const App: FC = () => {
@@ -11,6 +12,7 @@ const App: FC = () => {
       <Topbar />
       <CommandBar />
       <Panels />
+      <SideBar />
       <CanvasBoard />
     </>
   );

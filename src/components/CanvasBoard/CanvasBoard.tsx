@@ -392,7 +392,8 @@ const CanvasBoard: FC = () => {
       className="fixed inset-0 overflow-hidden dark:bg-neutral-800 bg-neutral-300"
       style={{
         top: "80px", // Leave space for topbar
-        left: "48px", // Leave space for sidebar
+        left: "48px", // Leave space for left sidebar
+        right: "256px", // Leave space for right sidebar (256px = 64 * 4 = w-64)
       }}
     >
       {/* Origin corner */}
