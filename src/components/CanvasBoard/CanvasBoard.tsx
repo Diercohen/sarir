@@ -1,7 +1,7 @@
 import clsx from "clsx";
 import * as fabric from "fabric";
 import { useEffect, useRef, useState, type FC } from "react";
-import { add, disposeCanvas, getCanvas } from "./code";
+import { add, disposeCanvas, getCanvas, remove } from "./code";
 // import ReactIcon from "@/assets/react.svg?react";
 
 const RULER_SIZE = 24; // Size of ruler in pixels
@@ -296,6 +296,27 @@ const CanvasBoard: FC = () => {
       // Ensure we dispose the Fabric canvas on unmount/HMR to avoid re-init
       disposeCanvas();
     };
+  }, []);
+
+  // Handle Delete/Backspace to remove active object(s)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Delete" || e.key === "Backspace") {
+        try {
+          const canvas = getCanvas() as fabric.Canvas;
+          const activeObject = canvas.getActiveObject();
+          if (activeObject) {
+            e.preventDefault();
+            remove();
+          }
+        } catch {
+          // If canvas not ready, ignore
+        }
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
   return (
     <div

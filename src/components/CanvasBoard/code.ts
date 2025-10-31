@@ -102,6 +102,11 @@ const discard = () => {
   canvas.discardActiveObject();
   canvas.requestRenderAll();
 };
+const remove = () => {
+  const canvas = getCanvas();
+  canvas.remove(canvas.getActiveObject() as fabric.FabricObject);
+  canvas.requestRenderAll();
+};
 
 export {
   add,
@@ -111,5 +116,6 @@ export {
   getCanvas,
   group,
   multiselect,
+  remove,
   ungroup,
 };
