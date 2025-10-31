@@ -13,6 +13,23 @@ const getCanvas = () => {
   return canvasInstance as fabric.Canvas;
 };
 
+const addSVGImage = (svgSrcArray: string[]) => {
+  const canvas = getCanvas();
+  svgSrcArray.forEach((svgSrc) => {
+    fabric.loadSVGFromURL(svgSrc).then(({ objects }) => {
+      const obj = fabric.util.groupSVGElements(objects as fabric.Object[]);
+      obj.clone().then((clone) => {
+        clone.set({
+          left: 0,
+          top: 0,
+        });
+        canvas.add(clone);
+        canvas.requestRenderAll();
+      });
+    });
+  });
+};
+
 const disposeCanvas = () => {
   if (canvasInstance) {
     canvasInstance.dispose();
@@ -111,6 +128,7 @@ const remove = () => {
 export {
   add,
   addmore,
+  addSVGImage,
   discard,
   disposeCanvas,
   getCanvas,

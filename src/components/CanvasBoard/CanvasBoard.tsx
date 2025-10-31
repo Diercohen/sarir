@@ -1,7 +1,7 @@
 import clsx from "clsx";
 import * as fabric from "fabric";
 import { useEffect, useRef, useState, type FC } from "react";
-import { add, disposeCanvas, getCanvas, remove } from "./code";
+import { add, addSVGImage, disposeCanvas, getCanvas, remove } from "./code";
 // import ReactIcon from "@/assets/react.svg?react";
 
 const RULER_SIZE = 24; // Size of ruler in pixels
@@ -318,6 +318,11 @@ const CanvasBoard: FC = () => {
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
+
+  useEffect(() => {
+    addSVGImage(["/vite.svg", "/react.svg"]);
+  }, []);
+
   return (
     <div
       ref={containerRef}
