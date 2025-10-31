@@ -1,6 +1,8 @@
 import ReactIcon from "@/assets/react.svg?react";
 import clsx from "clsx";
+import * as fabric from "fabric";
 import { useEffect, useRef, useState, type FC } from "react";
+import { add, disposeCanvas, getCanvas } from "./code";
 
 const RULER_SIZE = 24; // Size of ruler in pixels
 const RULER_ORIGIN_OFFSET = 50; // Offset from 0,0
@@ -264,6 +266,16 @@ const CanvasBoard: FC = () => {
     setDragStart({ x: 0, y: 0 });
   };
 
+  useEffect(() => {
+    const canvas = getCanvas() as fabric.Canvas;
+    if (canvas) {
+      add();
+    }
+    return () => {
+      // Ensure we dispose the Fabric canvas on unmount/HMR to avoid re-init
+      disposeCanvas();
+    };
+  }, []);
   return (
     <div
       ref={containerRef}
@@ -332,6 +344,7 @@ const CanvasBoard: FC = () => {
             }}
           >
             {/* Canvas content goes here */}
+            <canvas id="canvas" />
             {/* Example: Inline SVG usage */}
             <div className="absolute z-10 top-[50px] left-[50px] w-[100px] h-[100px]">
               <ReactIcon

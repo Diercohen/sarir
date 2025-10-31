@@ -1,0 +1,115 @@
+import * as fabric from "fabric";
+
+// Keep a single module-scoped instance to avoid re-initializing
+let canvasInstance: fabric.Canvas | null = null;
+
+const getCanvas = () => {
+  if (canvasInstance) return canvasInstance as fabric.Canvas;
+  const element = document.getElementById("canvas") as HTMLCanvasElement | null;
+  if (!element) {
+    throw new Error("Canvas element with id 'canvas' not found");
+  }
+  canvasInstance = new fabric.Canvas(element);
+  return canvasInstance as fabric.Canvas;
+};
+
+const disposeCanvas = () => {
+  if (canvasInstance) {
+    canvasInstance.dispose();
+    canvasInstance = null;
+  }
+};
+
+function add() {
+  const canvas = getCanvas();
+  const { width, height } = canvas;
+  const red = new fabric.Rect({
+    top: Math.random() * (height - 25),
+    left: Math.random() * (width - 40),
+    width: 80,
+    height: 50,
+    fill: "red",
+  });
+  const blue = new fabric.Rect({
+    top: Math.random() * (height - 35),
+    left: Math.random() * (width - 25),
+    width: 50,
+    height: 70,
+    fill: "blue",
+  });
+  const green = new fabric.Rect({
+    top: Math.random() * (height - 30),
+    left: Math.random() * (width - 30),
+    width: 60,
+    height: 60,
+    fill: "green",
+  });
+  canvas.add(red, blue, green);
+}
+
+fabric.FabricObject.ownDefaults.transparentCorners = false;
+
+const addmore = () => {
+  add();
+};
+
+const multiselect = () => {
+  const canvas = getCanvas();
+  canvas.discardActiveObject();
+  const sel = new fabric.ActiveSelection(canvas.getObjects(), {
+    canvas: canvas,
+  });
+  canvas.setActiveObject(sel);
+  canvas.requestRenderAll();
+};
+
+const group = () => {
+  const canvas = getCanvas();
+  if (!canvas.getActiveObject()) {
+    return;
+  }
+  console.log(canvas.getActiveObject()?.type);
+  if (
+    canvas.getActiveObject()?.type !== "activeSelection" &&
+    canvas.getActiveObject()?.type !== "activeselection"
+  ) {
+    return;
+  }
+  const group = new fabric.Group(
+    (canvas.getActiveObject() as fabric.ActiveSelection)?.removeAll()
+  );
+  canvas.add(group);
+  canvas.setActiveObject(group);
+  canvas.requestRenderAll();
+};
+
+const ungroup = () => {
+  const canvas = getCanvas();
+  const group = canvas.getActiveObject();
+  if (!group || group.type !== "group") {
+    return;
+  }
+  canvas.remove(group);
+  const sel = new fabric.ActiveSelection((group as fabric.Group)?.removeAll(), {
+    canvas: canvas,
+  });
+  canvas.setActiveObject(sel);
+  canvas.requestRenderAll();
+};
+
+const discard = () => {
+  const canvas = getCanvas();
+  canvas.discardActiveObject();
+  canvas.requestRenderAll();
+};
+
+export {
+  add,
+  addmore,
+  discard,
+  disposeCanvas,
+  getCanvas,
+  group,
+  multiselect,
+  ungroup,
+};
