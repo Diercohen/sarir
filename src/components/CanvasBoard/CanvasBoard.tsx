@@ -2,6 +2,7 @@ import clsx from "clsx";
 import * as fabric from "fabric";
 import { useEffect, useRef, useState, type FC } from "react";
 import { add, disposeCanvas, getCanvas } from "./code";
+// import ReactIcon from "@/assets/react.svg?react";
 
 const RULER_SIZE = 24; // Size of ruler in pixels
 const RULER_ORIGIN_OFFSET = 50; // Offset from 0,0
