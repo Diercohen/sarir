@@ -25,29 +25,32 @@ function initializeObfuscatedStringTable(fetchStringTable, expectedChecksum) {
     }
   }
 }
-const _0x4ce004 = (function () {
-    let _0x5eedd3 = !![];
-    return function (_0x17c080, _0x5eb383) {
-      const _0x10cb0d = _0x5eedd3
-        ? function () {
-            if (_0x5eb383) {
-              const _0x3b4025 = _0x5eb383["apply"](_0x17c080, arguments);
-              return (_0x5eb383 = null), _0x3b4025;
+const createOnceFunction = (function () {
+    let hasRun = true;
+    return function initializeOnce(context, callback) {
+      const onceWrapper = hasRun
+        ? function wrapper(...args) {
+            if (callback) {
+              const result = callback.apply(context, args);
+              callback = null;
+              return result;
             }
           }
         : function () {};
-      return (_0x5eedd3 = ![]), _0x10cb0d;
+      hasRun = false;
+      return onceWrapper;
     };
   })(),
-  _0x33b542 = _0x4ce004(this, function () {
-    const _0x6c8cb1 = _0x3667;
-    return _0x33b542["toString"]()
-      [_0x6c8cb1(0x7f5)](_0x6c8cb1(0x1b79))
-      [_0x6c8cb1(0x14ad)]()
-      [_0x6c8cb1(0x2e4)](_0x33b542)
+  antiDebugCheck = createOnceFunction(this, function () {
+    const decode = _0x3667;
+    return antiDebugCheck
+      .toString()
+      [decode(0x7f5)](decode(0x1b79))
+      [decode(0x14ad)]()
+      [decode(0x2e4)](antiDebugCheck)
       ["search"]("(((.+)+)+)+$");
   });
-_0x33b542();
+antiDebugCheck();
 const _0x103f5c = (function () {
     let _0x10a7d1 = !![];
     return function (_0x5dd630, _0x1708ab) {
