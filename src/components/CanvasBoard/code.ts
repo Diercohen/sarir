@@ -67,18 +67,18 @@ const addSVGImage = (svgSrcArray: string[]) => {
   const canvas = getCanvas();
   const groupObjects: fabric.Object[] = [];
 
-  // let loaded = 0;
-  // const onAllLoaded = () => {
-  //   if (loaded === svgSrcArray.length) {
-  //     // Combine all loaded SVGs into one group
-  //     const group = new fabric.Group(groupObjects, {
-  //       left: 0,
-  //       top: 0,
-  //     });
-  //     canvas.add(group);
-  //     canvas.requestRenderAll();
-  //   }
-  // };
+  let loaded = 0;
+  const onAllLoaded = () => {
+    if (loaded === svgSrcArray.length) {
+      // Combine all loaded SVGs into one group
+      const group = new fabric.Group(groupObjects, {
+        left: 0,
+        top: 0,
+      });
+      canvas.add(group);
+      canvas.requestRenderAll();
+    }
+  };
 
   const registry = LayerRegistry.getInstance();
   svgSrcArray.forEach((svgSrc, index) => {
@@ -96,14 +96,14 @@ const addSVGImage = (svgSrcArray: string[]) => {
         canvas.requestRenderAll();
 
         groupObjects.push(clone);
-        // loaded += 1;
+        loaded += 1;
         canvas.add(clone);
         // Register with layer registry
         const fileName =
           svgSrc.split("/").pop()?.replace(".svg", "") || `SVG ${index + 1}`;
         registry.register(clone, fileName);
         canvas.requestRenderAll();
-        // onAllLoaded();
+        onAllLoaded();
       });
     });
   });
