@@ -1,28 +1,30 @@
-const _0x327ee3 = _0x3667;
-(function (_0x574645, _0x447cbf) {
-  const _0x525bce = _0x3667,
-    _0x57d907 = _0x574645();
-  while (!![]) {
+const obfuscatedStringDecoder = _0x3667;
+const _0x327ee3 = obfuscatedStringDecoder;
+
+initializeObfuscatedStringTable(getObfuscatedStringTable, 0xe56bd);
+
+function initializeObfuscatedStringTable(fetchStringTable, expectedChecksum) {
+  const decode = obfuscatedStringDecoder,
+    stringTable = fetchStringTable();
+  while (true) {
     try {
-      const _0x386a59 =
-        (-parseInt(_0x525bce(0xe38)) / 0x1) *
-          (-parseInt(_0x525bce(0x20d5)) / 0x2) +
-        -parseInt(_0x525bce(0xe0e)) / 0x3 +
-        (-parseInt(_0x525bce(0xbf5)) / 0x4) *
-          (parseInt(_0x525bce(0x1f0c)) / 0x5) +
-        parseInt(_0x525bce(0x1da2)) / 0x6 +
-        (-parseInt(_0x525bce(0x1e8e)) / 0x7) *
-          (-parseInt(_0x525bce(0x1ac4)) / 0x8) +
-        parseInt(_0x525bce(0x43a)) / 0x9 +
-        (-parseInt(_0x525bce(0xa44)) / 0xa) *
-          (-parseInt(_0x525bce(0xcaf)) / 0xb);
-      if (_0x386a59 === _0x447cbf) break;
-      else _0x57d907["push"](_0x57d907["shift"]());
-    } catch (_0x3e7dfb) {
-      _0x57d907["push"](_0x57d907["shift"]());
+      const checksum =
+        (-parseInt(decode(0xe38)) / 0x1) * (-parseInt(decode(0x20d5)) / 0x2) +
+        -parseInt(decode(0xe0e)) / 0x3 +
+        (-parseInt(decode(0xbf5)) / 0x4) * (parseInt(decode(0x1f0c)) / 0x5) +
+        parseInt(decode(0x1da2)) / 0x6 +
+        (-parseInt(decode(0x1e8e)) / 0x7) * (-parseInt(decode(0x1ac4)) / 0x8) +
+        parseInt(decode(0x43a)) / 0x9 +
+        (-parseInt(decode(0xa44)) / 0xa) * (-parseInt(decode(0xcaf)) / 0xb);
+      if (checksum === expectedChecksum) {
+        break;
+      }
+      stringTable.push(stringTable.shift());
+    } catch (error) {
+      stringTable.push(stringTable.shift());
     }
   }
-})(_0x1abf, 0xe56bd);
+}
 const _0x4ce004 = (function () {
     let _0x5eedd3 = !![];
     return function (_0x17c080, _0x5eb383) {
@@ -996,8 +998,8 @@ function setting_show() {
     );
   loadSettings(), _0xf08b5b[_0x44a10a(0xcf9)]();
 }
-function _0x1abf() {
-  const _0x5ef3e8 = [
+function getObfuscatedStringTable() {
+  const obfuscatedStrings = [
     "\x22ssad_sinksh_5",
     "\x22f2_sta_sad",
     "\x22z_add",
@@ -9501,10 +9503,10 @@ function _0x1abf() {
     "\x22bb50_enoon_ksh_01",
     "\x22smim_mim_angle_01",
   ];
-  _0x1abf = function () {
-    return _0x5ef3e8;
+  getObfuscatedStringTable = function () {
+    return obfuscatedStrings;
   };
-  return _0x1abf();
+  return getObfuscatedStringTable();
 }
 function loadSettings() {
   const _0x114a92 = _0x327ee3,
@@ -166488,7 +166490,7 @@ function CalculateLetters_Rect_without_stuff() {
     (_0x236ee9 = _0x257d30 + _0x16d1e2);
 }
 function _0x3667(_0x5b69c1, _0x568ef5) {
-  const _0x35faad = _0x1abf();
+  const _0x35faad = getObfuscatedStringTable();
   return (
     (_0x3667 = function (_0x63e06e, _0x103f5c) {
       _0x63e06e = _0x63e06e - 0x188;
