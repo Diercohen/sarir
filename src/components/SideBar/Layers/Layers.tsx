@@ -367,7 +367,7 @@ const Layers: FC = () => {
   }, [layers]);
 
   return (
-    <div className="fixed top-22 right-0 bottom-0 w-64 dark:bg-neutral-700 bg-neutral-100 border-l dark:border-neutral-600 border-neutral-200 flex flex-col">
+    <div className="flex flex-col">
       {/* Header */}
       <div className="px-4 py-3 border-b dark:border-neutral-600 border-neutral-200">
         <h2 className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">
