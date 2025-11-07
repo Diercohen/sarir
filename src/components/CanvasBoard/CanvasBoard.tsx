@@ -2,6 +2,7 @@ import clsx from "clsx";
 import * as fabric from "fabric";
 import { useEffect, useRef, useState, type FC } from "react";
 import { useAppContext } from "../../App.context";
+import { HistoryRegistry } from "../../utils/HistoryRegistry";
 import { LayerRegistry } from "../../utils/LayerRegistry";
 import {
   add,
@@ -315,7 +316,14 @@ const CanvasBoard: FC = () => {
   useEffect(() => {
     const canvas = getCanvas() as fabric.Canvas;
     if (canvas) {
-      add();
+      // Initialize history before adding objects
+      const historyRegistry = HistoryRegistry.getInstance();
+      historyRegistry.initialize();
+
+      // Small delay to ensure history is initialized before objects are added
+      setTimeout(() => {
+        add();
+      }, 50);
     }
     return () => {
       // Ensure we dispose the Fabric canvas on unmount/HMR to avoid re-init
@@ -418,9 +426,31 @@ const CanvasBoard: FC = () => {
     };
   }, [setSelectedLayerIds, clearSelection]);
 
-  // Handle Delete/Backspace to remove active object(s)
+  // Handle Delete/Backspace to remove active object(s) and Undo/Redo
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      // Handle Undo (Cmd/Ctrl+Z)
+      if (e.key === "z" || e.key === "Z") {
+        const isCommandOrControl = e.metaKey || e.ctrlKey;
+        const isShift = e.shiftKey;
+
+        if (isCommandOrControl && !isShift) {
+          // Undo
+          e.preventDefault();
+          const historyRegistry = HistoryRegistry.getInstance();
+          historyRegistry.undo();
+          return;
+        }
+
+        if (isCommandOrControl && isShift) {
+          // Redo (Cmd/Ctrl+Shift+Z)
+          e.preventDefault();
+          const historyRegistry = HistoryRegistry.getInstance();
+          historyRegistry.redo();
+          return;
+        }
+      }
+
       // Nudge with arrow keys when something is selected
       if (
         e.key === "ArrowUp" ||
