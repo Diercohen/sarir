@@ -1,4 +1,5 @@
 import * as fabric from "fabric";
+import { HistoryRegistry } from "../../utils/HistoryRegistry";
 import { LayerRegistry } from "../../utils/LayerRegistry";
 
 // Keep a single module-scoped instance to avoid re-initializing
@@ -16,7 +17,7 @@ const getCanvas = () => {
   const registry = LayerRegistry.getInstance();
   registry.setCanvas(canvasInstance);
 
-  // Set up canvas event listeners for layer tracking
+  // Set up canvas event listeners for layer tracking and history
   setupCanvasEventListeners(canvasInstance, registry);
 
   return canvasInstance as fabric.Canvas;
@@ -26,26 +27,115 @@ const setupCanvasEventListeners = (
   canvas: fabric.Canvas,
   registry: LayerRegistry
 ) => {
+  const historyRegistry = HistoryRegistry.getInstance();
+
   // Register objects when added to canvas
   canvas.on("object:added", (e) => {
     if (e.target) {
       // Only register if not already registered
-      if (!registry.getLayerByObject(e.target)) {
-        registry.register(e.target);
+      let layer = registry.getLayerByObject(e.target);
+      if (!layer) {
+        const layerId = registry.register(e.target);
+        layer = registry.getLayerById(layerId);
       }
+      // Record history
+      const name = layer?.name || "Object";
+      historyRegistry.recordStep("object:added", `Added ${name}`);
     }
   });
 
   // Unregister objects when removed from canvas
   canvas.on("object:removed", (e) => {
     if (e.target) {
+      const layer = registry.getLayerByObject(e.target);
+      const name = layer?.name || "Object";
       registry.unregister(e.target);
+      // Record history
+      historyRegistry.recordStep("object:removed", `Removed ${name}`);
     }
   });
 
   // Sync when objects are modified (moved, resized, etc.)
-  canvas.on("object:modified", () => {
+  canvas.on("object:modified", (e) => {
     registry.syncWithCanvas();
+    // Record history for modifications
+    if (e.target) {
+      const layer = registry.getLayerByObject(e.target);
+      const name = layer?.name || "Object";
+      historyRegistry.recordStep("object:modified", `Modified ${name}`);
+    }
+  });
+
+  // Track object movement
+  canvas.on("object:moving", (e) => {
+    if (e.target) {
+      const layer = registry.getLayerByObject(e.target);
+      const name = layer?.name || "Object";
+      historyRegistry.recordStep("object:moving", `Moving ${name}`);
+    }
+  });
+
+  // Track object scaling
+  canvas.on("object:scaling", (e) => {
+    if (e.target) {
+      const layer = registry.getLayerByObject(e.target);
+      const name = layer?.name || "Object";
+      historyRegistry.recordStep("object:scaling", `Scaling ${name}`);
+    }
+  });
+
+  // Track object rotation
+  canvas.on("object:rotating", (e) => {
+    if (e.target) {
+      const layer = registry.getLayerByObject(e.target);
+      const name = layer?.name || "Object";
+      historyRegistry.recordStep("object:rotating", `Rotating ${name}`);
+    }
+  });
+
+  // Track object skewing
+  canvas.on("object:skewing", (e) => {
+    if (e.target) {
+      const layer = registry.getLayerByObject(e.target);
+      const name = layer?.name || "Object";
+      historyRegistry.recordStep("object:skewing", `Skewing ${name}`);
+    }
+  });
+
+  // Track text changes
+  canvas.on("text:changed", (e) => {
+    if (e.target) {
+      const layer = registry.getLayerByObject(e.target);
+      const name = layer?.name || "Text";
+      historyRegistry.recordStep("text:changed", `Changed ${name}`);
+    }
+  });
+
+  // Track text movement text:moving
+  canvas.on("object:moving", (e) => {
+    if (e.target) {
+      const layer = registry.getLayerByObject(e.target);
+      const name = layer?.name || "Text";
+      historyRegistry.recordStep("text:moving", `Moving ${name}`);
+    }
+  });
+
+  // Track text scaling text:scaling
+  canvas.on("object:scaling", (e) => {
+    if (e.target) {
+      const layer = registry.getLayerByObject(e.target);
+      const name = layer?.name || "Text";
+      historyRegistry.recordStep("text:scaling", `Scaling ${name}`);
+    }
+  });
+
+  // Track text rotation object:rotating
+  canvas.on("object:rotating", (e) => {
+    if (e.target) {
+      const layer = registry.getLayerByObject(e.target);
+      const name = layer?.name || "Text";
+      historyRegistry.recordStep("text:rotating", `Rotating ${name}`);
+    }
   });
 
   // Sync layer order when rendering (handles z-order changes)
@@ -202,6 +292,13 @@ const cloneActiveAndNudge = async (dx: number, dy: number) => {
 function add() {
   const canvas = getCanvas();
   const registry = LayerRegistry.getInstance();
+  const historyRegistry = HistoryRegistry.getInstance();
+
+  // Initialize history if not already initialized
+  if (historyRegistry.getSteps().length === 0) {
+    historyRegistry.initialize();
+  }
+
   const { width, height } = canvas;
   const textbox = new fabric.Textbox("سلام من به تو یار قدیمی", {
     fill: "black",
