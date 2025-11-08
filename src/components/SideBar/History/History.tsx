@@ -91,11 +91,11 @@ const History: FC = () => {
                   }}
                   className={cn(
                     "group px-2 py-1.5 mx-1 rounded flex items-center gap-2 transition-colors",
-                    isCurrent
-                      ? "bg-blue-100 dark:bg-blue-900/30 cursor-default"
-                      : isPast
-                      ? "hover:bg-neutral-200 dark:hover:bg-neutral-600 cursor-pointer"
-                      : isFuture && "opacity-30"
+                    isCurrent &&
+                      "bg-blue-100 dark:bg-blue-900/30 cursor-default",
+                    isPast &&
+                      "hover:bg-neutral-200 dark:hover:bg-neutral-600 cursor-pointer",
+                    isFuture && "opacity-30"
                   )}
                   title={step.description}
                 >
