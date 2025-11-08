@@ -21,6 +21,7 @@ export class HistoryRegistry {
   private listeners: Set<HistoryRegistryListener> = new Set();
   private maxHistorySize: number = 100;
   private isRecording: boolean = true;
+  private isApplyingState: boolean = false;
   private debounceTimeout: ReturnType<typeof setTimeout> | null = null;
   private pendingEvent: { type: string; description: string } | null = null;
 
@@ -77,7 +78,7 @@ export class HistoryRegistry {
    */
   saveState(eventType: string, description: string): void {
     const canvas = this.getCanvas();
-    if (!canvas || !this.isRecording) return;
+    if (!canvas || !this.isRecording || this.isApplyingState) return;
 
     // Debounce rapid events (like object:moving) to avoid too many history entries
     if (this.debounceTimeout) {
@@ -128,7 +129,7 @@ export class HistoryRegistry {
    */
   recordStep(eventType: string, description: string): void {
     const canvas = this.getCanvas();
-    if (!canvas || !this.isRecording) return;
+    if (!canvas || !this.isRecording || this.isApplyingState) return;
 
     // Clear any pending debounced events
     if (this.debounceTimeout) {
@@ -223,6 +224,7 @@ export class HistoryRegistry {
     if (!canvas) return;
 
     this.isRecording = false; // Prevent recording while applying state
+    this.isApplyingState = true; // Flag to prevent event handlers from recording
 
     try {
       const json = JSON.parse(canvasState);
@@ -231,11 +233,18 @@ export class HistoryRegistry {
         const registry = LayerRegistry.getInstance();
         registry.syncWithCanvas();
         canvas.requestRenderAll();
-        this.isRecording = true;
+
+        // Use a small delay to ensure all canvas events from loadFromJSON have fired
+        // before re-enabling recording
+        setTimeout(() => {
+          this.isRecording = true;
+          this.isApplyingState = false;
+        }, 100);
       });
     } catch (error) {
       console.error("Error applying history state:", error);
       this.isRecording = true;
+      this.isApplyingState = false;
     }
   }
 
