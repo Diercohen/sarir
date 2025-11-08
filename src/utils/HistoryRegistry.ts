@@ -74,6 +74,16 @@ export class HistoryRegistry {
   }
 
   /**
+   * Remove all future history steps (steps after currentIndex)
+   * This is called when adding a new history step after navigating to a past step
+   */
+  private truncateFutureHistory(): void {
+    if (this.currentIndex < this.steps.length - 1) {
+      this.steps = this.steps.slice(0, this.currentIndex + 1);
+    }
+  }
+
+  /**
    * Save current canvas state as a history step
    */
   saveState(eventType: string, description: string): void {
@@ -96,10 +106,8 @@ export class HistoryRegistry {
       // Serialize canvas state
       const canvasState = JSON.stringify(canvas.toJSON());
 
-      // If we're not at the end of history, truncate forward history
-      if (this.currentIndex < this.steps.length - 1) {
-        this.steps = this.steps.slice(0, this.currentIndex + 1);
-      }
+      // Remove all future history steps before adding new one
+      this.truncateFutureHistory();
 
       // Create new history step
       const step: HistoryStep = {
@@ -141,10 +149,8 @@ export class HistoryRegistry {
     // Serialize canvas state
     const canvasState = JSON.stringify(canvas.toJSON());
 
-    // If we're not at the end of history, truncate forward history
-    if (this.currentIndex < this.steps.length - 1) {
-      this.steps = this.steps.slice(0, this.currentIndex + 1);
-    }
+    // Remove all future history steps (those with opacity-30) before adding new one
+    this.truncateFutureHistory();
 
     // Create new history step
     const step: HistoryStep = {
