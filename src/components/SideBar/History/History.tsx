@@ -93,9 +93,9 @@ const History: FC = () => {
                     "group px-2 py-1.5 mx-1 rounded flex items-center gap-2 transition-colors",
                     isCurrent
                       ? "bg-blue-100 dark:bg-blue-900/30 cursor-default"
-                      : isPast || isFuture
+                      : isPast
                       ? "hover:bg-neutral-200 dark:hover:bg-neutral-600 cursor-pointer"
-                      : "opacity-50 cursor-not-allowed"
+                      : isFuture && "opacity-30"
                   )}
                   title={step.description}
                 >
@@ -110,7 +110,6 @@ const History: FC = () => {
                         : "text-neutral-300 dark:text-neutral-600"
                     )}
                   />
-
                   {/* Step Info */}
                   <div className="flex-1 min-w-0">
                     <div
@@ -136,7 +135,6 @@ const History: FC = () => {
                       {formatTime(step.timestamp)}
                     </div>
                   </div>
-
                   {/* Current Indicator */}
                   {isCurrent && (
                     <div className="w-2 h-2 rounded-full bg-blue-600 dark:bg-blue-400 flex-shrink-0" />
