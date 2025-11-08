@@ -23,7 +23,7 @@ export class HistoryRegistry {
   private isRecording: boolean = true;
   private isApplyingState: boolean = false;
   private debounceTimeout: ReturnType<typeof setTimeout> | null = null;
-  private pendingEvent: { type: string; description: string } | null = null;
+  private pendingEvent: { type: string; description: string; timestamp: number } | null = null;
 
   private constructor() {
     // Private constructor for singleton
@@ -90,12 +90,15 @@ export class HistoryRegistry {
     const canvas = this.getCanvas();
     if (!canvas || !this.isRecording || this.isApplyingState) return;
 
+    // Capture timestamp when event occurs, not when debounced callback executes
+    const eventTimestamp = Date.now();
+
     // Debounce rapid events (like object:moving) to avoid too many history entries
     if (this.debounceTimeout) {
       clearTimeout(this.debounceTimeout);
     }
 
-    this.pendingEvent = { type: eventType, description };
+    this.pendingEvent = { type: eventType, description, timestamp: eventTimestamp };
 
     this.debounceTimeout = setTimeout(() => {
       if (!this.pendingEvent) return;
@@ -109,10 +112,10 @@ export class HistoryRegistry {
       // Remove all future history steps before adding new one
       this.truncateFutureHistory();
 
-      // Create new history step
+      // Create new history step with timestamp from when event occurred
       const step: HistoryStep = {
-        id: `step-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-        timestamp: Date.now(),
+        id: `step-${this.pendingEvent.timestamp}-${Math.random().toString(36).substr(2, 9)}`,
+        timestamp: this.pendingEvent.timestamp,
         description: this.pendingEvent.description,
         canvasState,
         eventType: this.pendingEvent.type,
@@ -139,6 +142,9 @@ export class HistoryRegistry {
     const canvas = this.getCanvas();
     if (!canvas || !this.isRecording || this.isApplyingState) return;
 
+    // Capture timestamp when event occurs
+    const eventTimestamp = Date.now();
+
     // Clear any pending debounced events
     if (this.debounceTimeout) {
       clearTimeout(this.debounceTimeout);
@@ -152,10 +158,10 @@ export class HistoryRegistry {
     // Remove all future history steps (those with opacity-30) before adding new one
     this.truncateFutureHistory();
 
-    // Create new history step
+    // Create new history step with accurate timestamp
     const step: HistoryStep = {
-      id: `step-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-      timestamp: Date.now(),
+      id: `step-${eventTimestamp}-${Math.random().toString(36).substr(2, 9)}`,
+      timestamp: eventTimestamp,
       description,
       canvasState,
       eventType,
