@@ -75,7 +75,7 @@ export class HistoryRegistry {
   /**
    * Save current canvas state as a history step
    */
-  private saveState(eventType: string, description: string): void {
+  saveState(eventType: string, description: string): void {
     const canvas = this.getCanvas();
     if (!canvas || !this.isRecording) return;
 

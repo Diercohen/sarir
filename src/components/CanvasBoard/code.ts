@@ -71,7 +71,7 @@ const setupCanvasEventListeners = (
     if (e.target) {
       const layer = registry.getLayerByObject(e.target);
       const name = layer?.name || "Object";
-      historyRegistry.recordStep("object:moving", `Moving ${name}`);
+      historyRegistry.saveState("object:moving", `Moving ${name}`);
     }
   });
 
@@ -80,7 +80,7 @@ const setupCanvasEventListeners = (
     if (e.target) {
       const layer = registry.getLayerByObject(e.target);
       const name = layer?.name || "Object";
-      historyRegistry.recordStep("object:scaling", `Scaling ${name}`);
+      historyRegistry.saveState("object:scaling", `Scaling ${name}`);
     }
   });
 
@@ -89,7 +89,7 @@ const setupCanvasEventListeners = (
     if (e.target) {
       const layer = registry.getLayerByObject(e.target);
       const name = layer?.name || "Object";
-      historyRegistry.recordStep("object:rotating", `Rotating ${name}`);
+      historyRegistry.saveState("object:rotating", `Rotating ${name}`);
     }
   });
 
@@ -98,7 +98,7 @@ const setupCanvasEventListeners = (
     if (e.target) {
       const layer = registry.getLayerByObject(e.target);
       const name = layer?.name || "Object";
-      historyRegistry.recordStep("object:skewing", `Skewing ${name}`);
+      historyRegistry.saveState("object:skewing", `Skewing ${name}`);
     }
   });
 
@@ -107,7 +107,7 @@ const setupCanvasEventListeners = (
     if (e.target) {
       const layer = registry.getLayerByObject(e.target);
       const name = layer?.name || "Text";
-      historyRegistry.recordStep("text:changed", `Changed ${name}`);
+      historyRegistry.saveState("text:changed", `Changed ${name}`);
     }
   });
 
@@ -116,7 +116,7 @@ const setupCanvasEventListeners = (
     if (e.target) {
       const layer = registry.getLayerByObject(e.target);
       const name = layer?.name || "Text";
-      historyRegistry.recordStep("text:moving", `Moving ${name}`);
+      historyRegistry.saveState("text:moving", `Moving ${name}`);
     }
   });
 
@@ -125,7 +125,7 @@ const setupCanvasEventListeners = (
     if (e.target) {
       const layer = registry.getLayerByObject(e.target);
       const name = layer?.name || "Text";
-      historyRegistry.recordStep("text:scaling", `Scaling ${name}`);
+      historyRegistry.saveState("text:scaling", `Scaling ${name}`);
     }
   });
 
@@ -134,7 +134,7 @@ const setupCanvasEventListeners = (
     if (e.target) {
       const layer = registry.getLayerByObject(e.target);
       const name = layer?.name || "Text";
-      historyRegistry.recordStep("text:rotating", `Rotating ${name}`);
+      historyRegistry.saveState("text:rotating", `Rotating ${name}`);
     }
   });
 
