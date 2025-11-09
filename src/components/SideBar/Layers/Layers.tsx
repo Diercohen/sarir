@@ -367,7 +367,7 @@ const Layers: FC = () => {
   }, [layers]);
 
   return (
-    <div className="flex flex-col">
+    <div className="flex flex-col h-full">
       {/* Header */}
       <div className="px-4 py-3 border-b dark:border-neutral-600 border-neutral-200">
         <h2 className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">
@@ -375,8 +375,12 @@ const Layers: FC = () => {
         </h2>
       </div>
 
-      {/* Layers List */}
-      <div ref={scrollContainerRef} className="flex-1 overflow-y-auto">
+      {/* Layers List (scrollable) */}
+      <div
+        ref={scrollContainerRef}
+        className="flex-1 overflow-y-auto"
+        style={{ minHeight: 0, maxHeight: "100%" }}
+      >
         {layers.length === 0 ? (
           <div className="px-4 py-8 text-center text-sm text-neutral-500 dark:text-neutral-400">
             No layers
