@@ -62,7 +62,7 @@ const History: FC = () => {
   };
 
   return (
-    <div className="flex flex-col">
+    <div className="flex flex-col h-full">
       {/* Header */}
       <div className="px-4 py-3 border-b dark:border-neutral-600 border-neutral-200">
         <h2 className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">
@@ -77,7 +77,7 @@ const History: FC = () => {
             No history
           </div>
         ) : (
-          <div className="py-2 overflow-y-auto max-h-70">
+          <div className="py-2  mb-20 pb-4">
             {steps.map((step, index) => {
               const isCurrent = index === currentIndex;
               const isPast = index < currentIndex;
