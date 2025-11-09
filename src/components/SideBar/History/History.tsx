@@ -1,11 +1,12 @@
 import { cn } from "@/lib/utils";
 import { HistoryRegistry, type HistoryStep } from "@/utils/HistoryRegistry";
 import { Clock } from "lucide-react";
-import { useEffect, useState, type FC } from "react";
+import { useEffect, useRef, useState, type FC } from "react";
 
 const History: FC = () => {
   const [steps, setSteps] = useState<HistoryStep[]>([]);
   const [currentIndex, setCurrentIndex] = useState<number>(-1);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const registry = HistoryRegistry.getInstance();
@@ -29,6 +30,19 @@ const History: FC = () => {
       unsubscribe();
     };
   }, []);
+
+  // Scroll to latest item on mount
+  useEffect(() => {
+    if (steps.length > 0 && scrollContainerRef.current) {
+      // Use setTimeout to ensure DOM is fully rendered
+      setTimeout(() => {
+        if (scrollContainerRef.current) {
+          scrollContainerRef.current.scrollTop =
+            scrollContainerRef.current.scrollHeight;
+        }
+      }, 0);
+    }
+  }, [steps.length]);
 
   const handleStepClick = (stepId: string) => {
     const registry = HistoryRegistry.getInstance();
@@ -71,7 +85,7 @@ const History: FC = () => {
       </div>
 
       {/* History List */}
-      <div className="flex-1 overflow-y-auto">
+      <div ref={scrollContainerRef} className="flex-1 overflow-y-auto">
         {steps.length === 0 ? (
           <div className="px-4 py-8 text-center text-sm text-neutral-500 dark:text-neutral-400">
             No history
