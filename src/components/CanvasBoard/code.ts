@@ -341,10 +341,6 @@ function add() {
 
 fabric.FabricObject.ownDefaults.transparentCorners = false;
 
-const addmore = () => {
-  add();
-};
-
 const multiselect = () => {
   const canvas = getCanvas();
   canvas.discardActiveObject();
@@ -449,7 +445,6 @@ const remove = () => {
 
 export {
   add,
-  addmore,
   addSVGImage,
   cloneActiveAndNudge,
   discard,
