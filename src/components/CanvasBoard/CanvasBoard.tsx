@@ -312,18 +312,20 @@ const CanvasBoard: FC = () => {
     setIsDragging(false);
     setDragStart({ x: 0, y: 0 });
   };
-
+  const isInitialized = useRef(false);
   useEffect(() => {
     const canvas = getCanvas() as fabric.Canvas;
-    if (canvas) {
+    if (canvas && !isInitialized.current) {
       // Initialize history before adding objects
       const historyRegistry = HistoryRegistry.getInstance();
       historyRegistry.initialize();
 
+      console.log("add3");
       // Small delay to ensure history is initialized before objects are added
       setTimeout(() => {
         add();
-      }, 50);
+      }, 500);
+      isInitialized.current = true;
     }
     return () => {
       // Ensure we dispose the Fabric canvas on unmount/HMR to avoid re-init
