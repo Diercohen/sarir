@@ -10,7 +10,9 @@ const TextTool: FC = () => {
     <>
       <Button
         onClick={() => {
-          setActiveTool(ToolType.TextTool);
+          setActiveTool((prev) =>
+            prev === ToolType.TextTool ? undefined : ToolType.TextTool
+          );
         }}
         variant={activeTool === ToolType.TextTool ? "default" : "outline"}
         size="lg"
