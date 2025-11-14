@@ -1,10 +1,11 @@
+import { ToolType } from "@/App.const";
 import type { FC } from "react";
-import TextTool from "./TextTool";
+import ToolItem from "./ToolItem";
 
 const PanelItems: FC = () => {
   return (
     <>
-      <TextTool />
+      <ToolItem toolType={ToolType.TextTool} />
     </>
   );
 };
