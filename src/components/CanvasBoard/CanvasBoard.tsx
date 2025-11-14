@@ -14,6 +14,7 @@ import {
   nudgeActive,
   remove,
 } from "./code";
+import useCanvasCursor from "./hooks/useCanvasCursor";
 // import ReactIcon from "@/assets/react.svg?react";
 
 const RULER_SIZE = 24; // Size of ruler in pixels
@@ -182,6 +183,7 @@ const CanvasBoard: FC = () => {
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [containerSize, setContainerSize] = useState({ width: 0, height: 0 });
 
+  const { canvasCursor } = useCanvasCursor(isDragging);
   // Canvas dimensions
   const canvasWidth = 800;
   const canvasHeight = 600;
@@ -575,7 +577,7 @@ const CanvasBoard: FC = () => {
         ref={canvasAreaRef}
         className="absolute dark:bg-neutral-600 bg-neutral-300"
         style={{
-          cursor: isDragging ? "grabbing" : "grab",
+          cursor: canvasCursor,
           width: `${containerSize.width - RULER_SIZE}px`,
           height: `${containerSize.height - RULER_SIZE}px`,
           top: `${RULER_SIZE}px`,
