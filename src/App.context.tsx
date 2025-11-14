@@ -1,13 +1,15 @@
 import type { Dispatch, ReactNode, SetStateAction } from "react";
 
 import React, { createContext, useContext, useMemo, useState } from "react";
-import { Language } from "./App.const";
+import { Language, ToolType } from "./App.const";
 
 interface AppContextProps {
   language: Language;
   setLanguage: Dispatch<SetStateAction<Language>>;
   selectedLayerIds: Set<string>;
   setSelectedLayerIds: Dispatch<SetStateAction<Set<string>>>;
+  activeTool: ToolType | undefined;
+  setActiveTool: Dispatch<SetStateAction<ToolType | undefined>>;
   // Convenience methods
   selectLayer: (layerId: string) => void;
   deselectLayer: (layerId: string) => void;
@@ -23,7 +25,7 @@ export const AppContextProvider: React.FC<{ children: ReactNode }> = ({
   const [selectedLayerIds, setSelectedLayerIds] = useState<Set<string>>(
     new Set()
   );
-
+  const [activeTool, setActiveTool] = useState<ToolType | undefined>(undefined);
   const selectLayer = (layerId: string) => {
     setSelectedLayerIds((prev) => new Set(prev).add(layerId));
   };
@@ -49,8 +51,10 @@ export const AppContextProvider: React.FC<{ children: ReactNode }> = ({
       selectLayer,
       deselectLayer,
       clearSelection,
+      activeTool,
+      setActiveTool,
     };
-  }, [language, setLanguage, selectedLayerIds]);
+  }, [language, setLanguage, selectedLayerIds, activeTool, setActiveTool]);
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
 };
 
