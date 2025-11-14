@@ -1,5 +1,7 @@
-const PanelItems = () => {
-  return <div>PanelItems</div>;
+import type { FC } from "react";
+
+const PanelItems: FC = () => {
+  return <></>;
 };
 
 export default PanelItems;
