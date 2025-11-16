@@ -1,3 +1,4 @@
+import { ToolType } from "@/App.const";
 import clsx from "clsx";
 import * as fabric from "fabric";
 import { useEffect, useRef, useState, type FC } from "react";
@@ -174,7 +175,8 @@ const Grid: FC<GridProps> = ({
 const CanvasBoard: FC = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasAreaRef = useRef<HTMLDivElement>(null);
-  const { setSelectedLayerIds, clearSelection } = useAppContext();
+  const { setSelectedLayerIds, clearSelection, activeTool, setActiveTool } =
+    useAppContext();
 
   const [zoom, setZoom] = useState(INITIAL_ZOOM);
   const [panX, setPanX] = useState(0);
@@ -300,6 +302,10 @@ const CanvasBoard: FC = () => {
   }, [isDragging, dragStart, panX, panY]);
 
   const handleMouseDown = (e: React.MouseEvent) => {
+    if (activeTool) {
+      return;
+    }
+
     if (e.button === 0) {
       // Left mouse button
       setIsDragging(true);
@@ -334,6 +340,62 @@ const CanvasBoard: FC = () => {
       disposeCanvas();
     };
   }, []);
+  const addTextObject = (pointer: { x: number; y: number }) => {
+    const canvasInstance = getCanvas() as fabric.Canvas;
+    const textbox = new fabric.Textbox("", {
+      left: pointer.x,
+      top: pointer.y,
+      fontSize: 32,
+      fill: "black",
+      textAlign: "left",
+      editingBorderColor: "#2680eb",
+    });
+
+    canvasInstance.add(textbox);
+    canvasInstance.setActiveObject(textbox);
+    textbox.enterEditing();
+
+    const hiddenTextarea = (
+      textbox as unknown as { hiddenTextarea?: HTMLTextAreaElement }
+    ).hiddenTextarea;
+    hiddenTextarea?.focus();
+
+    canvasInstance.requestRenderAll();
+    setActiveTool(undefined);
+  };
+  useEffect(() => {
+    let canvasInstance: fabric.Canvas | null = null;
+
+    try {
+      canvasInstance = getCanvas() as fabric.Canvas;
+    } catch {
+      return;
+    }
+
+    const handleMouseDown = (options: fabric.IEvent<MouseEvent>) => {
+      if (!activeTool) {
+        return;
+      }
+
+      if (options.target) {
+        return;
+      }
+
+      const pointer = options.pointer || options.absolutePointer;
+      if (!pointer) {
+        return;
+      }
+      if (activeTool === ToolType.TextTool) {
+        addTextObject(pointer);
+      }
+    };
+
+    canvasInstance.on("mouse:down", handleMouseDown);
+
+    return () => {
+      canvasInstance?.off("mouse:down", handleMouseDown);
+    };
+  }, [activeTool]);
 
   // Listen for canvas selection changes and update context
   useEffect(() => {
