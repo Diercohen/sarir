@@ -342,7 +342,7 @@ const CanvasBoard: FC = () => {
   }, []);
   const addTextObject = (pointer: { x: number; y: number }) => {
     const canvasInstance = getCanvas() as fabric.Canvas;
-    const textbox = new fabric.Textbox("", {
+    const textbox = new fabric.Textbox("lorem ipsum", {
       left: pointer.x,
       top: pointer.y,
       fontSize: 32,
