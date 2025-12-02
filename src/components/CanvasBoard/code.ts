@@ -151,6 +151,18 @@ const setupCanvasEventListeners = (
     }
   });
 
+  // Handle text exiting edit mode
+  canvas.on("text:editing:exited", (e) => {
+    if (e.target) {
+      const isTextObject =
+        e.target.type === "textbox" ||
+        e.target.type === "itext" ||
+        e.target.type === "text";
+      if (isTextObject) {
+        console.log("Text exited edit mode");
+      }
+    }
+  });
   // Sync layer order when rendering (handles z-order changes)
   // This is a catch-all for any z-order changes that might occur
   let syncTimeout: ReturnType<typeof setTimeout> | null = null;
