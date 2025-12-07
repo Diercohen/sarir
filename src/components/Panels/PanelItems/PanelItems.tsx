@@ -6,6 +6,7 @@ const PanelItems: FC = () => {
   return (
     <>
       <ToolItem toolType={ToolType.TextTool} />
+      <ToolItem toolType={ToolType.CalligraphyTool} />
     </>
   );
 };
