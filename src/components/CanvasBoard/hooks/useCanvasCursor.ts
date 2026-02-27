@@ -6,10 +6,11 @@ import { getCanvas } from "../code";
 
 const useCanvasCursor = (isDragging: boolean) => {
   const { activeTool } = useAppContext();
-  const isTextToolActive = activeTool === ToolType.TextTool;
+  const isAnyToolsItemActive =
+    activeTool && Object.values(ToolType).includes(activeTool);
   const canvasCursor = isDragging
     ? "grabbing"
-    : isTextToolActive
+    : isAnyToolsItemActive
     ? `url("data:image/svg+xml,${encodeURIComponent(
         ToolsIcon[activeTool].icon
       )}") 12 12, auto`

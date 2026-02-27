@@ -363,6 +363,31 @@ const CanvasBoard: FC = () => {
     canvasInstance.requestRenderAll();
     setActiveTool(undefined);
   };
+
+  const addCalligraphyObject = (pointer: { x: number; y: number }) => {
+    const canvasInstance = getCanvas() as fabric.Canvas;
+    const textbox = new fabric.Textbox("add calligraphy", {
+      left: pointer.x,
+      top: pointer.y,
+      fontSize: 32,
+      fill: "black",
+      textAlign: "left",
+      editingBorderColor: "#2680eb",
+    });
+
+    canvasInstance.add(textbox);
+    canvasInstance.setActiveObject(textbox);
+    textbox.enterEditing();
+
+    const hiddenTextarea = (
+      textbox as unknown as { hiddenTextarea?: HTMLTextAreaElement }
+    ).hiddenTextarea;
+    hiddenTextarea?.focus();
+
+    canvasInstance.requestRenderAll();
+    setActiveTool(undefined);
+  };
+
   useEffect(() => {
     let canvasInstance: fabric.Canvas | null = null;
 
@@ -387,6 +412,9 @@ const CanvasBoard: FC = () => {
       }
       if (activeTool === ToolType.TextTool) {
         addTextObject(pointer);
+      }
+      if (activeTool === ToolType.CalligraphyTool) {
+        addCalligraphyObject(pointer);
       }
     };
 

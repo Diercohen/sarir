@@ -146,6 +146,8 @@ const setupCanvasEventListeners = (
         e.target.type === "itext" ||
         e.target.type === "text";
       if (isTextObject) {
+        // add editing active state in app context to add panel
+        // setActiveTool(ToolType.TextTool);
         console.log("Text double-clicked - entering edit mode");
       }
     }
