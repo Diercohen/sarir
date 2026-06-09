@@ -1,12 +1,13 @@
-import { ToolType } from "@/App.const";
+import { ToolsObject } from "@/App.const";
 import type { FC } from "react";
 import ToolItem from "./ToolItem";
 
 const PanelItems: FC = () => {
   return (
     <>
-      <ToolItem toolType={ToolType.TextTool} />
-      <ToolItem toolType={ToolType.CalligraphyTool} />
+      {Object.values(ToolsObject).map((tool) => {
+        return <ToolItem key={tool.name} {...tool} />;
+      })}
     </>
   );
 };

@@ -1,4 +1,4 @@
-import { ToolsIcon, ToolType } from "@/App.const";
+import { ToolsObject, ToolType } from "@/App.const";
 import { useAppContext } from "@/App.context";
 import * as fabric from "fabric";
 import { useEffect } from "react";
@@ -8,13 +8,18 @@ const useCanvasCursor = (isDragging: boolean) => {
   const { activeTool } = useAppContext();
   const isAnyToolsItemActive =
     activeTool && Object.values(ToolType).includes(activeTool);
+
+  const currentActiveToolObject = ToolsObject.find(
+    (tool) => tool.toolId === activeTool,
+  );
+
   const canvasCursor = isDragging
     ? "grabbing"
     : isAnyToolsItemActive
-    ? `url("data:image/svg+xml,${encodeURIComponent(
-        ToolsIcon[activeTool].icon
-      )}") 12 12, auto`
-    : "grab";
+      ? `url("data:image/svg+xml,${encodeURIComponent(
+          currentActiveToolObject?.icon ?? "",
+        )}") 12 12, auto`
+      : "grab";
 
   useEffect(() => {
     let canvasInstance: fabric.Canvas | null = null;

@@ -1,6 +1,7 @@
 import { CaseUpperIcon, TypeIcon } from "lucide-react";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
+import type { ToolItemType } from "./components/Panels/PanelItems/ToolItem/ToolItem";
 
 export enum Language {
   EN = "en",
@@ -12,11 +13,17 @@ export enum ToolType {
   CalligraphyTool = "CALLIGRAPHY_TOOL",
 }
 
-export const ToolsIcon: Record<ToolType, { icon: string }> = {
-  [ToolType.TextTool]: {
+export const ToolsObject: ToolItemType[] = [
+  {
+    toolId: ToolType.TextTool,
+    name: "Text",
     icon: renderToStaticMarkup(createElement(TypeIcon)),
+    order: 0,
   },
-  [ToolType.CalligraphyTool]: {
+  {
+    toolId: ToolType.CalligraphyTool,
+    name: "Calligraphy",
     icon: renderToStaticMarkup(createElement(CaseUpperIcon)),
+    order: 1,
   },
-};
+];
